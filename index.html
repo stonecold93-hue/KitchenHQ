@@ -1523,10 +1523,15 @@ window.scanPhoto = async (input) => {
     items.forEach((item, idx) => {
       const div = document.createElement('div');
       div.className = 'scan-result-item';
+      // Présélectionner la catégorie suggérée par Claude
+      const suggestedCat = item.cat || 'frigo';
+      const catOptionsWithSelected = Object.entries(SECTIONS).map(([k,v]) => 
+        `<option value="${k}" ${k === suggestedCat ? 'selected' : ''}>${v.label}</option>`
+      ).join('');
       div.innerHTML = `
         <div class="scan-result-name">${item.nom} — ${item.qty} ${item.unit}</div>
         <div class="scan-result-actions" style="flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem">
-          <select class="scan-cat-select" id="scan-cat-${idx}" style="flex:1;min-width:120px">${catOptions}</select>
+          <select class="scan-cat-select" id="scan-cat-${idx}" style="flex:1;min-width:120px">${catOptionsWithSelected}</select>
           <button class="scan-add-btn" onclick="scanAddItem(${idx}, '${item.nom.replace(/'/g,"\'")}', ${item.qty}, '${item.unit}')" style="white-space:nowrap">+ Ajouter</button>
         </div>
       `;
