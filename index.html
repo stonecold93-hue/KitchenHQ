@@ -218,7 +218,7 @@
   .home-scan-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; border-radius: 4px; border: 1px solid var(--g4); background: transparent; color: var(--g2); font-family: 'DM Mono', monospace; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
   .home-scan-btn:hover { background: rgba(244,166,35,0.08); }
   .home-scan-status { font-size: 0.75rem; color: var(--g2); letter-spacing: 0.05em; padding: 0.5rem 0; }
-  .scan-result-item { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: var(--panel2); border-radius: 4px; margin-bottom: 0.3rem; }
+  .scan-result-item { display: flex; flex-direction: column; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: var(--panel2); border-radius: 4px; margin-bottom: 0.3rem; overflow: hidden; }
   .scan-result-name { font-size: 0.8rem; color: var(--g0); }
   .scan-result-actions { display: flex; gap: 0.4rem; align-items: center; }
   .scan-cat-select { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.4rem; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
@@ -1525,9 +1525,9 @@ window.scanPhoto = async (input) => {
       div.className = 'scan-result-item';
       div.innerHTML = `
         <div class="scan-result-name">${item.nom} — ${item.qty} ${item.unit}</div>
-        <div class="scan-result-actions">
-          <select class="scan-cat-select" id="scan-cat-${idx}">${catOptions}</select>
-          <button class="scan-add-btn" onclick="scanAddItem(${idx}, '${item.nom.replace(/'/g,"\'")}', ${item.qty}, '${item.unit}')">+ Ajouter</button>
+        <div class="scan-result-actions" style="flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem">
+          <select class="scan-cat-select" id="scan-cat-${idx}" style="flex:1;min-width:120px">${catOptions}</select>
+          <button class="scan-add-btn" onclick="scanAddItem(${idx}, '${item.nom.replace(/'/g,"\'")}', ${item.qty}, '${item.unit}')" style="white-space:nowrap">+ Ajouter</button>
         </div>
       `;
       resultsDiv.appendChild(div);
@@ -1550,23 +1550,28 @@ window.scanPhoto = async (input) => {
 };
 
 window.scanAddItem = async (idx, nom, qty, unit) => {
-  const catKey = document.getElementById(`scan-cat-${idx}`)?.value || 'frigo';
-  const ref = doc(db, 'users', currentUid, 'inventaire', 'aliments');
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const data = snap.data();
-  const cat = data[catKey];
-  if (!cat) return;
-  const existing = (cat.items || []).find(i => i.name.toLowerCase() === nom.toLowerCase());
-  if (existing) {
-    // Augmenter la quantité
-    const items = cat.items.map(i => i.name.toLowerCase() === nom.toLowerCase() ? {...i, qty: i.qty + qty} : i);
-    await updateDoc(ref, { [`${catKey}.items`]: items });
-    showToast(`✅ ${nom} mis à jour (+${qty})`);
-  } else {
-    const newItems = [...(cat.items || []), { name: nom, qty, unit }];
-    await updateDoc(ref, { [`${catKey}.items`]: newItems });
-    showToast(`✅ ${nom} ajouté à l'inventaire !`);
+  try {
+    const catKey = document.getElementById(`scan-cat-${idx}`)?.value || 'frigo';
+    const qtyNum = parseFloat(qty) || 1;
+    const ref = doc(db, 'users', currentUid, 'inventaire', 'aliments');
+    const snap = await getDoc(ref);
+    if (!snap.exists()) { showToast('❌ Inventaire introuvable'); return; }
+    const inventaire = snap.data();
+    const cat = inventaire[catKey];
+    if (!cat) { showToast('❌ Catégorie introuvable'); return; }
+    const existingIdx = (cat.items || []).findIndex(i => i.name.toLowerCase() === nom.toLowerCase());
+    if (existingIdx >= 0) {
+      const updatedItems = [...cat.items];
+      updatedItems[existingIdx] = {...updatedItems[existingIdx], qty: updatedItems[existingIdx].qty + qtyNum};
+      await updateDoc(ref, { [`${catKey}.items`]: updatedItems });
+      showToast(`✅ ${nom} mis à jour !`);
+    } else {
+      const newItems = [...(cat.items || []), { name: nom, qty: qtyNum, unit: unit || 'unité' }];
+      await updateDoc(ref, { [`${catKey}.items`]: newItems });
+      showToast(`✅ ${nom} ajouté !`);
+    }
+  } catch(e) {
+    showToast('❌ Erreur: ' + e.message);
   }
 };
 window.fermerModal = (id) => document.getElementById(id).classList.add('hidden');
