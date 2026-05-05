@@ -1496,10 +1496,23 @@ window.scanPhoto = async (input) => {
     }
 
     const data = await response.json();
-    const text = data.content[0].text.trim();
+    let text = data.content[0].text.trim();
+    // Nettoyage markdown
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    // Extraire entre [ et ]
+    const start = text.indexOf('[');
+    const end = text.lastIndexOf(']');
     let items;
-    try { items = JSON.parse(text); }
-    catch { throw new Error("Réponse invalide de l'IA"); }
+    if (start !== -1 && end !== -1 && end > start) {
+      try { items = JSON.parse(text.substring(start, end + 1)); }
+      catch(e) { 
+        status.textContent = '❌ Debug: ' + text.substring(start, start + 120);
+        return;
+      }
+    } else {
+      status.textContent = '❌ Réponse: ' + text.substring(0, 150);
+      return;
+    }
 
     status.textContent = `✅ ${items.length} aliment(s) détecté(s) — confirmez avant d'ajouter :`;
 
