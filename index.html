@@ -480,6 +480,17 @@
             <input type="file" id="scan-file-input" accept="image/*" capture="environment" style="display:none" onchange="scanPhoto(this)"/>
           </label>
         </div>
+        <div style="margin-top:0.5rem">
+          <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem">
+            — ou collez votre liste de commande —
+          </div>
+          <textarea id="scan-text-input" placeholder="Collez votre liste d'épicerie ici (texte copié de votre commande web)..." 
+            style="width:100%;min-height:80px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0.6rem;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);outline:none;resize:vertical;transition:border 0.15s"
+            onfocus="this.style.borderColor='var(--g4)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <button class="btn-gold" style="margin-top:0.4rem;width:100%;justify-content:center" onclick="scanTexte()">
+            🧠 Analyser la liste
+          </button>
+        </div>
         <div style="display:flex;gap:0.4rem;align-items:center">
           <input type="password" id="api-key-input" placeholder="Clé API Anthropic (sk-ant-...)" 
             style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0.4rem 0.7rem;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text);outline:none"/>
@@ -1421,6 +1432,127 @@ window.homeSearch = (query) => {
 window.toggleApiKeyVisible = () => {
   const input = document.getElementById('api-key-input');
   input.type = input.type === 'password' ? 'text' : 'password';
+};
+
+window.scanTexte = async () => {
+  const textarea = document.getElementById('scan-text-input');
+  const texte = textarea.value.trim();
+  if (!texte) { showToast("⚠️ Collez votre liste d'épicerie d'abord"); return; }
+  
+  const status = document.getElementById('scan-status');
+  const resultsDiv = document.getElementById('scan-results');
+  status.textContent = '🧠 Analyse de la liste en cours...';
+  status.classList.remove('hidden');
+  resultsDiv.classList.add('hidden');
+  resultsDiv.innerHTML = '';
+
+  const apiKey = document.getElementById('api-key-input').value.trim() || localStorage.getItem('chq_api_key');
+  if (!apiKey) { status.textContent = "⚠️ Entrez votre clé API Anthropic d'abord"; return; }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: `Tu es un assistant qui organise des listes d'épicerie. Voici une liste de produits. Pour chaque produit, extrais le nom simplifié en français et assigne la bonne catégorie.
+
+Catégories disponibles:
+- frigo: lait, oeufs, fromage, margarine, légumes frais, boissons, surgelés, frites surgelées, champignons, céleri, carottes, poivron
+- viandes: boeuf, porc, veau, bacon, jambon, bologne, pepperoni, charcuterie
+- volaille: poulet, dinde, poisson
+- conserves: tomates en boîte, sauce en boîte, jus
+- condiments: huile, sauce, moutarde, ketchup
+- epices: sel, poivre, épices, herbes
+- patessecs: pâtes, spaghetti, céréales, farine, flocons avoine, riz
+- patisserie: sucre, cassonade, levure chimique, chocolat, vanille
+- tartinades: beurre arachide, confiture, chips, croustilles, collations, gâteaux, barres, café
+- boulangerie: levure boulangère, pain
+
+Liste des produits:
+${texte}
+
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ou après:
+[{"nom":"Nom simplifié en français","qty":QUANTITE_NUMERIQUE,"unit":"unité","cat":"categorie"}]
+
+Important: qty doit être un nombre (ex: 1, 2), pas du texte.`
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'Erreur API');
+    }
+
+    const data = await response.json();
+    let text = data.content[0].text.trim();
+    text = text.replace(/\`\`\`json/gi, '').replace(/\`\`\`/g, '').trim();
+    
+    const start = text.indexOf('[');
+    const end = text.lastIndexOf(']');
+    let items;
+    if (start !== -1 && end !== -1) {
+      items = JSON.parse(text.substring(start, end + 1));
+    } else {
+      throw new Error('Format invalide');
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      status.textContent = '❌ Aucun aliment détecté';
+      return;
+    }
+
+    status.textContent = "✅ " + items.length + " aliment(s) détecté(s) — confirmez avant d'ajouter :";
+    resultsDiv.innerHTML = '';
+
+    items.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'scan-result-item';
+      const catOptionsWithSelected = Object.entries(SECTIONS).map(([k,v]) =>
+        '<option value="' + k + '"' + (k === (item.cat || 'frigo') ? ' selected' : '') + '>' + v.label + '</option>'
+      ).join('');
+      const btn = document.createElement('button');
+      btn.className = 'scan-add-btn';
+      btn.style.whiteSpace = 'nowrap';
+      btn.textContent = '+ Ajouter';
+      btn.onclick = () => scanAddItem(idx, item.nom, item.qty, item.unit);
+      div.innerHTML =
+        '<div class="scan-result-name">' + item.nom + ' — ' + item.qty + ' ' + item.unit + '</div>' +
+        '<div class="scan-result-actions" style="flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem" id="scan-actions-' + idx + '">' +
+        '<select class="scan-cat-select" id="scan-cat-' + idx + '" style="flex:1;min-width:120px">' + catOptionsWithSelected + '</select>' +
+        '</div>';
+      div.querySelector('#scan-actions-' + idx).appendChild(btn);
+      resultsDiv.appendChild(div);
+    });
+
+    const addAllBtn = document.createElement('button');
+    addAllBtn.className = 'btn-gold';
+    addAllBtn.style.marginTop = '0.5rem';
+    addAllBtn.style.width = '100%';
+    addAllBtn.textContent = "✅ Tout ajouter à l'inventaire";
+    addAllBtn.onclick = async () => {
+      for (let i = 0; i < items.length; i++) {
+        await scanAddItem(i, items[i].nom, items[i].qty, items[i].unit);
+      }
+      textarea.value = '';
+      resultsDiv.innerHTML = '';
+      status.textContent = "✅ Tous les aliments ajoutés !";
+    };
+    resultsDiv.appendChild(addAllBtn);
+    resultsDiv.classList.remove('hidden');
+
+  } catch(e) {
+    status.textContent = '❌ Erreur: ' + e.message;
+  }
 };
 
 window.saveApiKey = (key) => {
