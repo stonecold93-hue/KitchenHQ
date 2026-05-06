@@ -1629,12 +1629,20 @@ window.scanAddItem = async (idx, nom, qty, unit) => {
     const inventaire = snap.data();
     const cat = inventaire[catKey];
     if (!cat) { showToast('❌ Catégorie: ' + catKey + ' introuvable'); return; }
-    const existingIdx = (cat.items || []).findIndex(i => i.name.toLowerCase() === nom.toLowerCase());
+    // Chercher item existant (exact ou similaire)
+    const nomNorm = nom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const existingIdx = (cat.items || []).findIndex(i => {
+      const iNorm = i.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      return iNorm === nomNorm ||
+        (nomNorm.length >= 5 && iNorm.length >= 5 &&
+          (nomNorm.includes(iNorm.substring(0, Math.min(iNorm.length, 8))) ||
+           iNorm.includes(nomNorm.substring(0, Math.min(nomNorm.length, 8)))));
+    });
     if (existingIdx >= 0) {
       const updatedItems = [...cat.items];
       updatedItems[existingIdx] = {...updatedItems[existingIdx], qty: (updatedItems[existingIdx].qty || 0) + qtyNum};
       await updateDoc(ref, { [catKey + '.items']: updatedItems });
-      showToast('✅ ' + nom + ' mis à jour !');
+      showToast('✅ ' + cat.items[existingIdx].name + ' mis à jour (+' + qtyNum + ') !');
     } else {
       const newItems = [...(cat.items || []), { name: nom, qty: qtyNum, unit: unit || 'unité' }];
       await updateDoc(ref, { [catKey + '.items']: newItems });
