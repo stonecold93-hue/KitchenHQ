@@ -641,10 +641,15 @@ const SECTIONS = {
     { name: "Oignon", qty: 0, unit: "unité" },
     { name: "Piment rouge", qty: 0, unit: "unité" },
     { name: "Piment vert", qty: 0, unit: "unité" },
-    { name: "Champignon", qty: 0, unit: "unité" },
+    { name: "Champignon", qty: 2, unit: "227g" },
     { name: "Peace Tea pêche thé glacé", qty: 0, unit: "canette" },
     { name: "Peace Tea framboise thé glacé", qty: 0, unit: "canette" },
     { name: "Réhausseur de café vanille", qty: 0, unit: "bouteille" },
+    { name: "7 Up mini canettes", qty: 1, unit: "emballage 6x222mL" },
+    { name: "Eau pétillante fraise melon d'eau", qty: 1, unit: "bouteille 1L" },
+    { name: "Frites coupe ondulée surgelées Cavendish", qty: 1, unit: "sac 650g" },
+    { name: "Frites épicées poivre Cavendish", qty: 1, unit: "sac 750g" },
+    { name: "Rondelles d'oignon surgelées Cavendish", qty: 1, unit: "sac 400g" },
   ]},
   viandes: { label: "🥩 Viandes", color: "#5c1a0e", items: [
     { name: "Bœuf haché", qty: 5, unit: "sac ziploc" },
@@ -663,9 +668,12 @@ const SECTIONS = {
     { name: "Pepperoni", qty: 1, unit: "petit ziploc" },
     { name: "Pepperoni Épicé", qty: 3, unit: "petit ziploc" },
     { name: "Porc haché", qty: 3, unit: "unité" },
-    { name: "Jambon fumé", qty: 0, unit: "unité" },
+    { name: "Jambon fumé", qty: 1, unit: "675g" },
     { name: "Bologne", qty: 0, unit: "unité" },
     { name: "Tourtière", qty: 0, unit: "unité" },
+    { name: "Bacon Selection", qty: 2, unit: "paquet 375g" },
+    { name: "Veau haché maigre", qty: 1, unit: "504g" },
+    { name: "Bœuf haché maigre", qty: 1, unit: "1014g" },
   ]},
   volaille: { label: "🍗 Volaille & Poisson", color: "#5c4a00", items: [
     { name: "Poitrine de Poulet", qty: 6, unit: "unité" },
@@ -675,6 +683,7 @@ const SECTIONS = {
     { name: "Poulet Pop Corn", qty: 20, unit: "unité" },
     { name: "Poulet Médaillon Bacon", qty: 0, unit: "unité" },
     { name: "Filet de Sole", qty: 4, unit: "unité" },
+    { name: "Médaillon de poulet au bacon Flamingo", qty: 1, unit: "730g" },
   ]},
   platssauces: { label: "🍝 Plats & Sauces Maison", color: "#0e3020", items: [
     { name: "Sauce à Spaghetti", qty: 1, unit: "pot ziploc" },
@@ -781,10 +790,17 @@ const SECTIONS = {
     { name: "Nutella", qty: 2, unit: "pot" },
     { name: "Cookies & Cream spread", qty: 1, unit: "pot" },
     { name: "Goldfish Explosion de pizza", qty: 2, unit: "boîte" },
+    { name: "Jos Louis Vachon", qty: 1, unit: "boîte 6 gâteaux" },
+    { name: "Ah Caramel! Vachon", qty: 1, unit: "boîte 12 un" },
+    { name: "Barres granola chocolat noir Val Nature", qty: 2, unit: "boîte 5 un" },
+    { name: "Doritos Piment infernal", qty: 2, unit: "sac 235g" },
+    { name: "Croustilles BBQ mesquite Irrésistible", qty: 1, unit: "sac 150g" },
+    { name: "Fruit-O-Long collations roulées", qty: 2, unit: "sac 128g" },
   ]},
   boulangerie: { label: "🍞 Boulangerie & Divers", color: "#1a1505", items: [
     { name: "Levure sèche active", qty: 4, unit: "sachet" },
     { name: "Levure machine à pain", qty: 0, unit: "pot" },
+    { name: "Nescafé Gold Espresso décaféiné", qty: 2, unit: "pot 90g" },
   ]},
 };
 
@@ -1497,20 +1513,41 @@ window.scanPhoto = async (input) => {
 
     const data = await response.json();
     let text = data.content[0].text.trim();
-    // Nettoyage markdown
+    // Nettoyage agressif
     text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    // Extraire entre [ et ]
-    const start = text.indexOf('[');
-    const end = text.lastIndexOf(']');
+    // Enlever caractères invisibles
+    text = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').trim();
     let items;
-    if (start !== -1 && end !== -1 && end > start) {
-      try { items = JSON.parse(text.substring(start, end + 1)); }
-      catch(e) { 
-        status.textContent = '❌ Debug: ' + text.substring(start, start + 120);
-        return;
+    try {
+      // Essai 1: parser directement
+      items = JSON.parse(text);
+    } catch(e1) {
+      try {
+        // Essai 2: extraire entre [ et ]
+        const start = text.indexOf('[');
+        const end = text.lastIndexOf(']');
+        if (start !== -1 && end !== -1) {
+          items = JSON.parse(text.substring(start, end + 1));
+        } else {
+          throw new Error('No JSON array found');
+        }
+      } catch(e2) {
+        try {
+          // Essai 3: regex pour extraire le JSON
+          const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+          if (match) {
+            items = JSON.parse(match[0]);
+          } else {
+            throw new Error('No match');
+          }
+        } catch(e3) {
+          status.textContent = '❌ Impossible de lire: ' + text.substring(0, 100);
+          return;
+        }
       }
-    } else {
-      status.textContent = '❌ Réponse: ' + text.substring(0, 150);
+    }
+    if (!Array.isArray(items)) {
+      status.textContent = '❌ Format invalide';
       return;
     }
 
@@ -1580,6 +1617,65 @@ window.scanAddItem = async (idx, nom, qty, unit) => {
   }
 };
 window.fermerModal = (id) => document.getElementById(id).classList.add('hidden');
+
+// ── ÉPICERIE MANUELLE (test) ──
+window.chargerEpicerieTest = async () => {
+  const items = [
+    { nom: "Frites coupe ondulée surgelées Cavendish", qty: 1, unit: "sac 650g", cat: "frigo" },
+    { nom: "Nescafé Gold Espresso décaféiné", qty: 2, unit: "pot 90g", cat: "boulangerie" },
+    { nom: "7 Up mini canettes", qty: 1, unit: "emballage 6x222mL", cat: "frigo" },
+    { nom: "Eau pétillante fraise melon d'eau", qty: 1, unit: "bouteille 1L", cat: "frigo" },
+    { nom: "Jos Louis Vachon", qty: 1, unit: "boîte 6 gâteaux", cat: "tartinades" },
+    { nom: "Ah Caramel! Vachon", qty: 1, unit: "boîte 12 un", cat: "tartinades" },
+    { nom: "Barres granola chocolat noir Val Nature", qty: 2, unit: "boîte 5 un", cat: "tartinades" },
+    { nom: "Doritos Piment infernal", qty: 2, unit: "sac 235g", cat: "tartinades" },
+    { nom: "Croustilles BBQ mesquite Irrésistible", qty: 1, unit: "sac 150g", cat: "tartinades" },
+    { nom: "Fruit-O-Long collations roulées", qty: 2, unit: "sac 128g", cat: "tartinades" },
+    { nom: "Bacon Selection", qty: 2, unit: "paquet 375g", cat: "viandes" },
+    { nom: "Veau haché maigre", qty: 1, unit: "504g", cat: "viandes" },
+    { nom: "Jambon fumé à l'ancienne Selection", qty: 1, unit: "675g", cat: "viandes" },
+    { nom: "Bœuf haché maigre", qty: 1, unit: "1014g", cat: "viandes" },
+    { nom: "Médaillon de poulet au bacon Flamingo", qty: 1, unit: "730g", cat: "volaille" },
+    { nom: "Rondelles d'oignon surgelées Cavendish", qty: 1, unit: "sac 400g", cat: "frigo" },
+    { nom: "Frites épicées poivre concassé Cavendish", qty: 1, unit: "sac 750g", cat: "frigo" },
+    { nom: "Champignon blanc biologique", qty: 2, unit: "227g", cat: "frigo" },
+  ];
+
+  const status = document.getElementById('scan-status');
+  const resultsDiv = document.getElementById('scan-results');
+  const catOptions = Object.entries(SECTIONS).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+
+  status.textContent = `✅ ${items.length} aliment(s) détecté(s) — confirmez avant d'ajouter :`;
+  status.classList.remove('hidden');
+  resultsDiv.innerHTML = '';
+
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'scan-result-item';
+    const catOptionsWithSelected = Object.entries(SECTIONS).map(([k,v]) =>
+      `<option value="${k}" ${k === item.cat ? 'selected' : ''}>${v.label}</option>`
+    ).join('');
+    div.innerHTML = `
+      <div class="scan-result-name">${item.nom} — ${item.qty} ${item.unit}</div>
+      <div class="scan-result-actions" style="flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem">
+        <select class="scan-cat-select" id="scan-cat-${idx}" style="flex:1;min-width:120px">${catOptionsWithSelected}</select>
+        <button class="scan-add-btn" onclick="scanAddItem(${idx}, '${item.nom.replace(/'/g,"\'")}', ${item.qty}, '${item.unit}')" style="white-space:nowrap">+ Ajouter</button>
+      </div>
+    `;
+    resultsDiv.appendChild(div);
+  });
+
+  const addAllBtn = document.createElement('button');
+  addAllBtn.className = 'btn-gold';
+  addAllBtn.style.marginTop = '0.5rem';
+  addAllBtn.textContent = '✅ Tout ajouter';
+  addAllBtn.onclick = () => {
+    items.forEach((item, idx) => scanAddItem(idx, item.nom, item.qty, item.unit));
+    showToast('✅ Tous les aliments ajoutés !');
+  };
+  resultsDiv.appendChild(addAllBtn);
+  resultsDiv.classList.remove('hidden');
+};
 
 // ── RECHERCHE + FILTRE CATÉGORIE ──
 let activeCatFilter = 'tous';
