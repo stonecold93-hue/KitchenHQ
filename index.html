@@ -1593,27 +1593,33 @@ window.scanPhoto = async (input) => {
 
 window.scanAddItem = async (idx, nom, qty, unit) => {
   try {
-    const catKey = document.getElementById(`scan-cat-${idx}`)?.value || 'frigo';
+    const selectEl = document.getElementById('scan-cat-' + idx);
+    const catKey = selectEl ? selectEl.value : 'frigo';
     const qtyNum = parseFloat(qty) || 1;
+    if (!currentUid) { showToast('❌ Non connecté'); return; }
     const ref = doc(db, 'users', currentUid, 'inventaire', 'aliments');
     const snap = await getDoc(ref);
     if (!snap.exists()) { showToast('❌ Inventaire introuvable'); return; }
     const inventaire = snap.data();
     const cat = inventaire[catKey];
-    if (!cat) { showToast('❌ Catégorie introuvable'); return; }
+    if (!cat) { showToast('❌ Catégorie: ' + catKey + ' introuvable'); return; }
     const existingIdx = (cat.items || []).findIndex(i => i.name.toLowerCase() === nom.toLowerCase());
     if (existingIdx >= 0) {
       const updatedItems = [...cat.items];
-      updatedItems[existingIdx] = {...updatedItems[existingIdx], qty: updatedItems[existingIdx].qty + qtyNum};
-      await updateDoc(ref, { [`${catKey}.items`]: updatedItems });
-      showToast(`✅ ${nom} mis à jour !`);
+      updatedItems[existingIdx] = {...updatedItems[existingIdx], qty: (updatedItems[existingIdx].qty || 0) + qtyNum};
+      await updateDoc(ref, { [catKey + '.items']: updatedItems });
+      showToast('✅ ' + nom + ' mis à jour !');
     } else {
       const newItems = [...(cat.items || []), { name: nom, qty: qtyNum, unit: unit || 'unité' }];
-      await updateDoc(ref, { [`${catKey}.items`]: newItems });
-      showToast(`✅ ${nom} ajouté !`);
+      await updateDoc(ref, { [catKey + '.items']: newItems });
+      showToast('✅ ' + nom + ' ajouté !');
     }
+    // Désactiver le bouton après ajout
+    const btn = document.querySelector('[onclick*="scanAddItem(' + idx + ',"]');
+    if (btn) { btn.textContent = '✅'; btn.disabled = true; }
   } catch(e) {
     showToast('❌ Erreur: ' + e.message);
+    console.error(e);
   }
 };
 window.fermerModal = (id) => document.getElementById(id).classList.add('hidden');
