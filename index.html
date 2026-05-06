@@ -835,25 +835,50 @@ async function loadAll(uid) {
     }
   }
 
+  let isFirstRender = true;
   onSnapshot(ref, d => {
     if (d.exists()) {
-      // Sauvegarder position scroll et catégories ouvertes
-      const scrollY = window.scrollY;
-      const openCats = {};
-      document.querySelectorAll('#aliments-content .category').forEach(cat => {
-        const key = cat.dataset.catkey;
-        const body = cat.querySelector('.cat-body');
-        if (key && body) openCats[key] = !body.classList.contains('hidden');
-      });
+      if (isFirstRender) {
+        // Premier chargement — juste rendre
+        isFirstRender = false;
+        renderAliments(d.data(), uid, {});
+      } else {
+        // Mise à jour — sauvegarder état et restaurer
+        const scrollY = window.scrollY;
+        const activeTab = document.querySelector('.tab.active')?.dataset.tab;
+        const openCats = {};
+        document.querySelectorAll('#aliments-content .category').forEach(cat => {
+          const key = cat.dataset.catkey;
+          const body = cat.querySelector('.cat-body');
+          if (key && body) openCats[key] = !body.classList.contains('hidden');
+        });
 
-      renderAliments(d.data(), uid, openCats);
+        // Mettre à jour seulement les quantités sans re-rendre
+        const data = d.data();
+        let needFullRender = false;
+        document.querySelectorAll('#aliments-content .category').forEach(catDiv => {
+          const catKey = catDiv.dataset.catkey;
+          if (!catKey || !data[catKey]) return;
+          const items = data[catKey].items || [];
+          const rows = catDiv.querySelectorAll('.item');
+          if (rows.length !== items.length) { needFullRender = true; return; }
+          rows.forEach((row, idx) => {
+            if (!items[idx]) return;
+            const qtyEl = row.querySelector('.qty-value');
+            if (qtyEl && parseInt(qtyEl.textContent) !== items[idx].qty) {
+              qtyEl.textContent = items[idx].qty;
+              qtyEl.className = 'qty-value' + (items[idx].qty === 0 ? ' zero' : '');
+            }
+          });
+        });
 
-      // Restaurer scroll après rendu
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollY);
-      });
+        if (needFullRender) {
+          renderAliments(data, uid, openCats);
+          requestAnimationFrame(() => window.scrollTo(0, scrollY));
+        }
+      }
 
-      // Mettre à jour allItems pour autocomplete
+      // Mettre à jour allItems
       allItems = [];
       for (const cat of Object.values(d.data())) {
         for (const item of (cat.items || [])) {
