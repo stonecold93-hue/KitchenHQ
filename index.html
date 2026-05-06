@@ -1105,7 +1105,7 @@ function renderAliments(data, uid, openCats = {}) {
       row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1);
       row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx, 1);
       row.querySelector('.delete-btn').onclick = () => {
-        if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, data, idx);
+        if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, idx);
       };
       const cartBtn = row.querySelector('.cart-btn');
       cartBtn.onclick = async () => {
