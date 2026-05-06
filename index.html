@@ -835,52 +835,35 @@ async function loadAll(uid) {
     }
   }
 
-  let isFirstRender = true;
+  let inventaireData = null;
   onSnapshot(ref, d => {
     if (d.exists()) {
-      if (isFirstRender) {
-        // Premier chargement — juste rendre
-        isFirstRender = false;
-        renderAliments(d.data(), uid, {});
+      const data = d.data();
+      if (!inventaireData) {
+        // Premier chargement seulement
+        inventaireData = data;
+        renderAliments(data, uid, {});
       } else {
-        // Mise à jour — sauvegarder état et restaurer
-        const scrollY = window.scrollY;
-        const activeTab = document.querySelector('.tab.active')?.dataset.tab;
-        const openCats = {};
-        document.querySelectorAll('#aliments-content .category').forEach(cat => {
-          const key = cat.dataset.catkey;
-          const body = cat.querySelector('.cat-body');
-          if (key && body) openCats[key] = !body.classList.contains('hidden');
-        });
-
-        // Mettre à jour seulement les quantités sans re-rendre
-        const data = d.data();
-        let needFullRender = false;
-        document.querySelectorAll('#aliments-content .category').forEach(catDiv => {
-          const catKey = catDiv.dataset.catkey;
-          if (!catKey || !data[catKey]) return;
-          const items = data[catKey].items || [];
+        // Mise à jour Firebase — juste sync les données locales et qty dans DOM
+        inventaireData = data;
+        for (const [catKey, cat] of Object.entries(data)) {
+          const catDiv = document.querySelector(`[data-catkey="${catKey}"]`);
+          if (!catDiv) continue;
           const rows = catDiv.querySelectorAll('.item');
-          if (rows.length !== items.length) { needFullRender = true; return; }
-          rows.forEach((row, idx) => {
-            if (!items[idx]) return;
+          (cat.items || []).forEach((item, idx) => {
+            const row = rows[idx];
+            if (!row) return;
             const qtyEl = row.querySelector('.qty-value');
-            if (qtyEl && parseInt(qtyEl.textContent) !== items[idx].qty) {
-              qtyEl.textContent = items[idx].qty;
-              qtyEl.className = 'qty-value' + (items[idx].qty === 0 ? ' zero' : '');
+            if (qtyEl) {
+              qtyEl.textContent = item.qty;
+              qtyEl.className = 'qty-value' + (item.qty === 0 ? ' zero' : '');
             }
           });
-        });
-
-        if (needFullRender) {
-          renderAliments(data, uid, openCats);
-          requestAnimationFrame(() => window.scrollTo(0, scrollY));
         }
       }
-
-      // Mettre à jour allItems
+      // Sync allItems
       allItems = [];
-      for (const cat of Object.values(d.data())) {
+      for (const cat of Object.values(data)) {
         for (const item of (cat.items || [])) {
           if (!allItems.find(i => i.name.toLowerCase() === item.name.toLowerCase())) {
             allItems.push({ name: item.name, qty: item.qty, unit: item.unit });
@@ -1083,6 +1066,8 @@ function renderAliments(data, uid, openCats = {}) {
   const container = document.getElementById('aliments-content');
   container.innerHTML = '';
   buildCatFilters(data);
+  // Snapshot data au moment du render pour les callbacks
+  const renderSnapshot = JSON.parse(JSON.stringify(data));
   for (const [catKey, cat] of Object.entries(data)) {
     const div = document.createElement('div');
     div.className = 'category';
@@ -1156,7 +1141,14 @@ function renderAliments(data, uid, openCats = {}) {
 
 async function updateQty(uid, catKey, data, idx, delta) {
   const items = [...data[catKey].items];
-  items[idx] = { ...items[idx], qty: Math.max(0, items[idx].qty + delta) };
+  const newQty = Math.max(0, (items[idx].qty || 0) + delta);
+  items[idx] = { ...items[idx], qty: newQty };
+  // Mettre à jour le DOM immédiatement sans attendre Firebase
+  const qtyEl = document.querySelector(`[data-catkey="${catKey}"] .item:nth-child(${idx + 1}) .qty-value`);
+  if (qtyEl) {
+    qtyEl.textContent = newQty;
+    qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+  }
   saveCategory(uid, catKey, data, items);
 }
 async function deleteItem(uid, catKey, data, idx) {
