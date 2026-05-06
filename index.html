@@ -1102,8 +1102,8 @@ function renderAliments(data, uid, openCats = {}) {
         <button class="cart-btn" title="Ajouter à l'épicerie">🛒</button>
         <button class="delete-btn">✕</button>
       `;
-      row.querySelector('.minus').onclick = () => updateQty(uid, catKey, data, idx, -1);
-      row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, data, idx, 1);
+      row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1);
+      row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx, 1);
       row.querySelector('.delete-btn').onclick = () => {
         if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, data, idx);
       };
