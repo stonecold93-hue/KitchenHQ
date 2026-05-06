@@ -1139,26 +1139,35 @@ function renderAliments(data, uid, openCats = {}) {
   }
 }
 
-async function updateQty(uid, catKey, data, idx, delta) {
-  const items = [...data[catKey].items];
+async function updateQty(uid, catKey, idx, delta) {
+  // Toujours lire la version fraîche de Firebase
+  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const fresh = snap.data();
+  const items = [...(fresh[catKey].items || [])];
+  if (!items[idx]) return;
   const newQty = Math.max(0, (items[idx].qty || 0) + delta);
   items[idx] = { ...items[idx], qty: newQty };
-  // Mettre à jour le DOM immédiatement sans attendre Firebase
-  const qtyEl = document.querySelector(`[data-catkey="${catKey}"] .item:nth-child(${idx + 1}) .qty-value`);
-  if (qtyEl) {
-    qtyEl.textContent = newQty;
-    qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+  // Mettre à jour le DOM immédiatement
+  const catDiv = document.querySelector('[data-catkey="' + catKey + '"]');
+  if (catDiv) {
+    const rows = catDiv.querySelectorAll('.item');
+    if (rows[idx]) {
+      const qtyEl = rows[idx].querySelector('.qty-value');
+      if (qtyEl) {
+        qtyEl.textContent = newQty;
+        qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+      }
+    }
   }
-  saveCategory(uid, catKey, data, items);
+  await updateDoc(ref, { [catKey + '.items']: items });
 }
 async function deleteItem(uid, catKey, data, idx) {
   const items = data[catKey].items.filter((_, i) => i !== idx);
   saveCategory(uid, catKey, data, items);
 }
-async function saveCategory(uid, catKey, data, newItems) {
-  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
-  await updateDoc(ref, { [`${catKey}.items`]: newItems });
-}
+// saveCategory removed - using direct updateDoc
 
 // ── ÉPICERIE ──
 let epicerieUid = null;
