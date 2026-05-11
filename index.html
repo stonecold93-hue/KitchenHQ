@@ -921,32 +921,11 @@ async function loadAll(uid) {
     }
   }
 
-  let inventaireData = null;
   onSnapshot(ref, d => {
     if (d.exists()) {
       const data = d.data();
-      if (!inventaireData) {
-        // Premier chargement seulement
-        inventaireData = data;
-        renderAliments(data, uid, {});
-      } else {
-        // Mise à jour Firebase — juste sync les données locales et qty dans DOM
-        inventaireData = data;
-        for (const [catKey, cat] of Object.entries(data)) {
-          const catDiv = document.querySelector(`[data-catkey="${catKey}"]`);
-          if (!catDiv) continue;
-          const rows = catDiv.querySelectorAll('.item');
-          (cat.items || []).forEach((item, idx) => {
-            const row = rows[idx];
-            if (!row) return;
-            const qtyEl = row.querySelector('.qty-value');
-            if (qtyEl) {
-              qtyEl.textContent = item.qty;
-              qtyEl.className = 'qty-value' + (item.qty === 0 ? ' zero' : '');
-            }
-          });
-        }
-      }
+      // Toujours re-render complet — évite les bugs de sync partielle
+      renderAliments(data, uid);
       // Sync allItems
       allItems = [];
       for (const cat of Object.values(data)) {
