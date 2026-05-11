@@ -258,11 +258,11 @@
     margin-bottom: 1rem;
   }
   .cat-filter {
-    padding: 0.25rem 0.65rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 20px;
     border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
+    background: var(--panel2);
+    color: white;
     font-family: 'DM Mono', monospace;
     font-size: 0.65rem;
     letter-spacing: 0.04em;
@@ -271,11 +271,12 @@
     transition: all 0.15s;
   }
   .cat-filter.active {
-    border-color: var(--g4);
-    color: var(--g1);
-    background: #151005;
+    border-color: var(--g2);
+    color: white;
+    background: var(--g3);
+    box-shadow: 0 0 8px rgba(90,180,240,0.3);
   }
-  .cat-filter:hover:not(.active) { border-color: var(--g5); color: var(--g3); }
+  .cat-filter:hover:not(.active) { border-color: var(--g2); background: var(--g4); color: white; }
 
   /* ── SECTION TITLE ── */
   .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 1.5rem; letter-spacing: 0.08em; color: var(--g2); margin-bottom: 1.2rem; }
@@ -1651,9 +1652,10 @@ window.genererSuggestions = () => {
       const stockItem = allItems.find(item => {
         const itemNorm = item.name.toLowerCase()
           .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s$/, '');
+        // Correspondance exacte ou inclusion complète du nom
         return itemNorm === nomNorm ||
-          itemNorm.includes(nomNorm.substring(0, Math.min(nomNorm.length, 6))) ||
-          nomNorm.includes(itemNorm.substring(0, Math.min(itemNorm.length, 6)));
+          itemNorm.includes(nomNorm) ||
+          nomNorm.includes(itemNorm);
       });
 
       if (stockItem && stockItem.qty > 0) {
