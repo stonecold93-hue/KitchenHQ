@@ -1252,7 +1252,10 @@ async function deleteItem(uid, catKey, data, idx) {
   const items = data[catKey].items.filter((_, i) => i !== idx);
   saveCategory(uid, catKey, data, items);
 }
-// saveCategory removed - using direct updateDoc
+async function saveCategory(uid, catKey, data, newItems) {
+  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
+  await updateDoc(ref, { [catKey + '.items']: newItems });
+}
 
 // ── ÉPICERIE ──
 let epicerieUid = null;
