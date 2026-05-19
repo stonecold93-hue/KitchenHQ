@@ -706,8 +706,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
 
 let currentUid = null;
 let allItems = [];
-let cachedData = null;
-let cachedData = null; // Cache local des données Firebase // tous les aliments à plat pour autocomplete et vérif stock
+let cachedData = null; // Cache local des données Firebase
 
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -904,6 +903,50 @@ const SECTIONS = {
 };
 
 // ── LOAD ALL ──
+// ── ALIMENTS LISTENER (global) ──
+let unsubscribeAliments = null;
+let alimentsRef = null;
+let alimentsUid = null;
+let lastStructure = '';
+
+function subscribeAliments(ref, uid) {
+  alimentsRef = ref;
+  alimentsUid = uid;
+  lastStructure = '';
+  if (unsubscribeAliments) unsubscribeAliments();
+  unsubscribeAliments = onSnapshot(ref, d => {
+    if (d.exists()) {
+      const data = d.data();
+      cachedData = data;
+
+      const structure = JSON.stringify(
+        Object.entries(data).map(([k, v]) => [k, (v.items || []).map(i => i.name)])
+      );
+
+      if (structure !== lastStructure) {
+        lastStructure = structure;
+        const openCats = {};
+        document.querySelectorAll('#aliments-content .category').forEach(cat => {
+          const key = cat.dataset.catkey;
+          const body = cat.querySelector('.cat-body');
+          if (key && body) openCats[key] = !body.classList.contains('hidden');
+        });
+        renderAliments(data, uid, openCats);
+      }
+
+      // Sync allItems
+      allItems = [];
+      for (const cat of Object.values(data)) {
+        for (const item of (cat.items || [])) {
+          if (!allItems.find(i => i.name.toLowerCase() === item.name.toLowerCase())) {
+            allItems.push({ name: item.name, qty: item.qty, unit: item.unit });
+          }
+        }
+      }
+    }
+  });
+}
+
 async function loadAll(uid) {
   const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
   const snap = await getDoc(ref);
@@ -934,44 +977,7 @@ async function loadAll(uid) {
     }
   }
 
-  // Unsubscribe function — permet de couper le listener pendant un update
-  let unsubscribeAliments = null;
-
-  function subscribeAliments() {
-    let lastStructure = '';
-    unsubscribeAliments = onSnapshot(ref, d => {
-      if (d.exists()) {
-        const data = d.data();
-        cachedData = data;
-
-        const structure = JSON.stringify(
-          Object.entries(data).map(([k, v]) => [k, (v.items || []).map(i => i.name)])
-        );
-
-        if (structure !== lastStructure) {
-          lastStructure = structure;
-          const openCats = {};
-          document.querySelectorAll('#aliments-content .category').forEach(cat => {
-            const key = cat.dataset.catkey;
-            const body = cat.querySelector('.cat-body');
-            if (key && body) openCats[key] = !body.classList.contains('hidden');
-          });
-          renderAliments(data, uid, openCats);
-        }
-
-        // Sync allItems
-        allItems = [];
-        for (const cat of Object.values(data)) {
-          for (const item of (cat.items || [])) {
-            if (!allItems.find(i => i.name.toLowerCase() === item.name.toLowerCase())) {
-              allItems.push({ name: item.name, qty: item.qty, unit: item.unit });
-            }
-          }
-        }
-      }
-    });
-  }
-  subscribeAliments();
+  subscribeAliments(ref, uid);
   loadEpicerie(uid);
   loadRecettes(uid);
   initDefaultRecettes(uid);
@@ -1213,8 +1219,7 @@ function renderAliments(data, uid, openCats = {}) {
         if (!cachedData || !cachedData[catKey] || !cachedData[catKey].items[idx]) return;
         cachedData[catKey].items[idx] = { ...cachedData[catKey].items[idx], qty: newQty };
         if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
-        const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
-        updateDoc(ref, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments());
+        updateDoc(alimentsRef, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments(alimentsRef, alimentsUid));
       };
       row.querySelector('.delete-btn').onclick = () => {
         if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, idx);
@@ -1264,11 +1269,10 @@ async function updateQty(uid, catKey, idx, delta, qtyEl) {
   // Couper le listener Firebase avant de sauvegarder pour éviter le re-render
   if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
 
-  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
-  await updateDoc(ref, { [catKey + '.items']: cachedData[catKey].items });
+  await updateDoc(alimentsRef, { [catKey + '.items']: cachedData[catKey].items });
 
   // Rebrancher le listener après la sauvegarde
-  subscribeAliments();
+  subscribeAliments(alimentsRef, alimentsUid);
 }
 async function deleteItem(uid, catKey, data, idx) {
   const items = data[catKey].items.filter((_, i) => i !== idx);
