@@ -125,15 +125,24 @@
   .item-unit { font-size: 0.65rem; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.1rem 0.45rem; min-width: 50px; text-align: center; }
   .qty-controls { display: flex; align-items: center; gap: 0.35rem; }
   .qty-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  @media (max-width: 480px) {
+    .qty-btn { width: 32px; height: 32px; font-size: 1.1rem; }
+    .qty-value { width: 32px; font-size: 1rem; }
+    .cart-btn { width: 32px; height: 32px; }
+    .delete-btn { width: 28px; height: 28px; }
+    .item { padding: 0.5rem 0.75rem; gap: 0.4rem; }
+    .item-unit { min-width: 40px; font-size: 0.6rem; padding: 0.1rem 0.3rem; }
+  }
   .qty-btn:hover { border-color: var(--g3); color: var(--g2); }
   .qty-btn.minus:hover { border-color: var(--g5); color: var(--g4); }
   .qty-value {
     font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.1rem;
-    min-width: 40px; text-align: center; color: var(--g1);
+    width: 36px; text-align: center; color: var(--g1);
     background: transparent; border: none; outline: none;
     cursor: text; border-bottom: 1px solid transparent;
     transition: border-color 0.15s;
     -moz-appearance: textfield;
+    padding: 0;
   }
   .qty-value::-webkit-outer-spin-button,
   .qty-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
