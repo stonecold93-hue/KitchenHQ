@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
+:root {
     --g0: #EFF8FF; --g1: #BAE0FF; --g2: #5AB4F0; --g3: #1A7EC4; --g4: #0A4E84; --g5: #061E30;
     --bg: #020810; --panel: #040f1e; --panel2: #071428; --text: #EFF8FF; --muted: #3a6080; --border: #0a2240;
   }
@@ -127,7 +127,17 @@
   .qty-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
   .qty-btn:hover { border-color: var(--g3); color: var(--g2); }
   .qty-btn.minus:hover { border-color: var(--g5); color: var(--g4); }
-  .qty-value { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.1rem; min-width: 26px; text-align: center; color: var(--g1); }
+  .qty-value {
+    font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.1rem;
+    min-width: 40px; text-align: center; color: var(--g1);
+    background: transparent; border: none; outline: none;
+    cursor: text; border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .qty-value::-webkit-outer-spin-button,
+  .qty-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .qty-value:focus { border-bottom: 1px solid var(--g2); }
   .qty-value.zero { color: var(--g5); }
   .cart-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
   .cart-btn:hover { border-color: var(--g3); color: var(--g2); background: rgba(90,180,240,0.08); transform: scale(1.15); }
@@ -400,6 +410,7 @@
   .recette-detail-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--g1); margin-bottom: 0.3rem; }
   .recette-detail-notes { font-size: 0.78rem; color: var(--g0); font-style: italic; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); line-height: 1.6; }
 </style>
+
 </head>
 <body>
 
@@ -694,7 +705,9 @@ document.getElementById('btn-login').onclick = () => signInWithPopup(auth, new G
 document.getElementById('btn-logout').onclick = () => signOut(auth);
 
 let currentUid = null;
-let allItems = []; // tous les aliments à plat pour autocomplete et vérif stock
+let allItems = [];
+let cachedData = null;
+let cachedData = null; // Cache local des données Firebase // tous les aliments à plat pour autocomplete et vérif stock
 
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -921,22 +934,44 @@ async function loadAll(uid) {
     }
   }
 
-  onSnapshot(ref, d => {
-    if (d.exists()) {
-      const data = d.data();
-      // Toujours re-render complet — évite les bugs de sync partielle
-      renderAliments(data, uid);
-      // Sync allItems
-      allItems = [];
-      for (const cat of Object.values(data)) {
-        for (const item of (cat.items || [])) {
-          if (!allItems.find(i => i.name.toLowerCase() === item.name.toLowerCase())) {
-            allItems.push({ name: item.name, qty: item.qty, unit: item.unit });
+  // Unsubscribe function — permet de couper le listener pendant un update
+  let unsubscribeAliments = null;
+
+  function subscribeAliments() {
+    let lastStructure = '';
+    unsubscribeAliments = onSnapshot(ref, d => {
+      if (d.exists()) {
+        const data = d.data();
+        cachedData = data;
+
+        const structure = JSON.stringify(
+          Object.entries(data).map(([k, v]) => [k, (v.items || []).map(i => i.name)])
+        );
+
+        if (structure !== lastStructure) {
+          lastStructure = structure;
+          const openCats = {};
+          document.querySelectorAll('#aliments-content .category').forEach(cat => {
+            const key = cat.dataset.catkey;
+            const body = cat.querySelector('.cat-body');
+            if (key && body) openCats[key] = !body.classList.contains('hidden');
+          });
+          renderAliments(data, uid, openCats);
+        }
+
+        // Sync allItems
+        allItems = [];
+        for (const cat of Object.values(data)) {
+          for (const item of (cat.items || [])) {
+            if (!allItems.find(i => i.name.toLowerCase() === item.name.toLowerCase())) {
+              allItems.push({ name: item.name, qty: item.qty, unit: item.unit });
+            }
           }
         }
       }
-    }
-  });
+    });
+  }
+  subscribeAliments();
   loadEpicerie(uid);
   loadRecettes(uid);
   initDefaultRecettes(uid);
@@ -1161,14 +1196,26 @@ function renderAliments(data, uid, openCats = {}) {
         <span class="item-unit">${item.unit || ''}</span>
         <div class="qty-controls">
           <button class="qty-btn minus">−</button>
-          <span class="qty-value ${item.qty === 0 ? 'zero' : ''}">${item.qty}</span>
+          <input type="number" class="qty-value ${item.qty === 0 ? 'zero' : ''}" value="${item.qty}" min="0"/>
           <button class="qty-btn plus">+</button>
         </div>
         <button class="cart-btn" title="Ajouter à l'épicerie">🛒</button>
         <button class="delete-btn">✕</button>
       `;
-      row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1);
-      row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx, 1);
+      const qtyEl = row.querySelector('.qty-value');
+      row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1, qtyEl);
+      row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx, 1, qtyEl);
+      // Édition directe du chiffre
+      qtyEl.onchange = () => {
+        const newQty = Math.max(0, parseInt(qtyEl.value) || 0);
+        qtyEl.value = newQty;
+        qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+        if (!cachedData || !cachedData[catKey] || !cachedData[catKey].items[idx]) return;
+        cachedData[catKey].items[idx] = { ...cachedData[catKey].items[idx], qty: newQty };
+        if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
+        const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
+        updateDoc(ref, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments());
+      };
       row.querySelector('.delete-btn').onclick = () => {
         if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, idx);
       };
@@ -1204,35 +1251,31 @@ function renderAliments(data, uid, openCats = {}) {
   }
 }
 
-async function updateQty(uid, catKey, idx, delta) {
-  // Toujours lire la version fraîche de Firebase
-  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const fresh = snap.data();
-  const items = [...(fresh[catKey].items || [])];
-  if (!items[idx]) return;
-  const newQty = Math.max(0, (items[idx].qty || 0) + delta);
-  items[idx] = { ...items[idx], qty: newQty };
+async function updateQty(uid, catKey, idx, delta, qtyEl) {
   // Mettre à jour le DOM immédiatement
-  const catDiv = document.querySelector('[data-catkey="' + catKey + '"]');
-  if (catDiv) {
-    const rows = catDiv.querySelectorAll('.item');
-    if (rows[idx]) {
-      const qtyEl = rows[idx].querySelector('.qty-value');
-      if (qtyEl) {
-        qtyEl.textContent = newQty;
-        qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
-      }
-    }
-  }
-  await updateDoc(ref, { [catKey + '.items']: items });
+  const current = parseInt(qtyEl.value) || 0;
+  const newQty = Math.max(0, current + delta);
+  qtyEl.value = newQty;
+  qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+
+  if (!cachedData || !cachedData[catKey] || !cachedData[catKey].items[idx]) return;
+  cachedData[catKey].items[idx] = { ...cachedData[catKey].items[idx], qty: newQty };
+
+  // Couper le listener Firebase avant de sauvegarder pour éviter le re-render
+  if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
+
+  const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
+  await updateDoc(ref, { [catKey + '.items']: cachedData[catKey].items });
+
+  // Rebrancher le listener après la sauvegarde
+  subscribeAliments();
 }
 async function deleteItem(uid, catKey, data, idx) {
   const items = data[catKey].items.filter((_, i) => i !== idx);
   saveCategory(uid, catKey, data, items);
 }
 async function saveCategory(uid, catKey, data, newItems) {
+  if (cachedData && cachedData[catKey]) cachedData[catKey].items = newItems;
   const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
   await updateDoc(ref, { [catKey + '.items']: newItems });
 }
@@ -2183,5 +2226,6 @@ function buildCatFilters(data) {
   }
 }
 </script>
+
 </body>
 </html>
