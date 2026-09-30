@@ -323,6 +323,8 @@
   .epicerie-item label.checked { text-decoration: line-through; color: var(--muted); }
   .store-select { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; border-radius: 4px; padding: 0.2rem 0.4rem; cursor: pointer; min-width: 74px; }
   .store-select:focus { outline: none; border-color: var(--g4); color: var(--g0); }
+  .prix-input { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; border-radius: 4px; padding: 0.2rem 0.4rem; width: 52px; text-align: right; }
+  .prix-input:focus { outline: none; border-color: var(--g4); color: var(--g0); }
 
   /* ── SCAN RECETTE ── */
   .scan-recette-wrap {
@@ -1348,16 +1350,21 @@ function loadEpicerie(uid) {
         '<option value="Maxi"' + (storeVal === 'Maxi' ? ' selected' : '') + '>Maxi</option>' +
         '<option value="Walmart"' + (storeVal === 'Walmart' ? ' selected' : '') + '>Walmart</option>' +
         '<option value="Costco"' + (storeVal === 'Costco' ? ' selected' : '') + '>Costco</option>';
+      const prixVal = item.prix || '';
       row.innerHTML =
         '<input type="checkbox" id="' + id + '" ' + (item.checked ? 'checked' : '') + '/>' +
         '<label for="' + id + '" class="' + (item.checked ? 'checked' : '') + '">' + item.name + '</label>' +
         '<select class="store-select">' + storeOptions + '</select>' +
+        '<input type="text" class="prix-input" placeholder="prix" value="' + prixVal + '" inputmode="decimal"/>' +
         '<button class="delete-btn" style="color:var(--muted)">&#x2715;</button>';
-      row.querySelector('input').onchange = async (e) => {
+      row.querySelector('input[type="checkbox"]').onchange = async (e) => {
         await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { checked: e.target.checked });
       };
       row.querySelector('.store-select').onchange = async (e) => {
         await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { store: e.target.value });
+      };
+      row.querySelector('.prix-input').onblur = async (e) => {
+        await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { prix: e.target.value.trim() });
       };
       row.querySelector('.delete-btn').onclick = async () => {
         await deleteDoc(doc(db, 'users', uid, 'epicerie', d.id));
