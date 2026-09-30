@@ -968,22 +968,21 @@ function subscribeAliments(ref, uid) {
 
 async function loadAll(uid) {
   const ref = doc(db, 'users', uid, 'inventaire', 'aliments');
+
+  // Abonner immediatement — pas besoin d attendre
+  subscribeAliments(ref, uid);
+
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    // Première fois — créer avec les données par défaut
     await setDoc(ref, SECTIONS);
   } else {
-    // Document existe — ajouter seulement les catégories/items MANQUANTS
-    // sans jamais toucher aux quantités existantes
     const existing = snap.data();
     const updates = {};
     for (const [catKey, cat] of Object.entries(SECTIONS)) {
       if (!existing[catKey]) {
-        // Catégorie complète manquante — l'ajouter
         updates[catKey] = cat;
       } else {
-        // Catégorie existe — vérifier les items manquants
         const existingNames = (existing[catKey].items || []).map(i => i.name.toLowerCase());
         const missingItems = cat.items.filter(i => !existingNames.includes(i.name.toLowerCase()));
         if (missingItems.length > 0) {
@@ -992,11 +991,9 @@ async function loadAll(uid) {
       }
     }
     if (Object.keys(updates).length > 0) {
-      await updateDoc(ref, updates);
+      updateDoc(ref, updates);
     }
   }
-
-  subscribeAliments(ref, uid);
   loadEpicerie(uid);
   loadRecettes(uid);
   initDefaultRecettes(uid);
