@@ -756,6 +756,9 @@ window.goTab = function(tabName) {
   if (tabBtn) tabBtn.classList.add('active');
   const tabSection = document.getElementById('tab-' + tabName);
   if (tabSection) tabSection.classList.add('active');
+  if (tabName === 'aliments' && cachedData && alimentsUid) {
+    renderAliments(cachedData, alimentsUid);
+  }
 }
 
 // ── DEFAULT DATA ──
@@ -1272,7 +1275,7 @@ function renderCatPage(data, uid, catKey) {
       updateDoc(alimentsRef, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments(alimentsRef, alimentsUid));
     };
     row.querySelector('.delete-btn').onclick = () => {
-      if (confirm('Supprimer ' + item.name + ' ?')) deleteItem(uid, catKey, idx);
+      if (confirm('Supprimer ' + item.name + ' ?')) deleteItem(uid, catKey, cachedData, idx);
     };
     const cartBtn = row.querySelector('.cart-btn');
     cartBtn.onclick = async () => {
