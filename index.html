@@ -298,8 +298,8 @@
   .cat-filter:hover:not(.active) { border-color: var(--g2); background: var(--g4); color: white; }
 
   /* ── CAT SOUS-ONGLETS ── */
-  .cat-tab-bar { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); margin-bottom: 0; }
-  .cat-tab-bar::-webkit-scrollbar { display: none; }
+  .cat-tab-bar { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+
   .cat-tab-btn { padding: 0.5rem 0.85rem; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .cat-tab-btn.active { color: var(--g2); border-bottom-color: var(--g2); }
   .cat-tab-btn:hover:not(.active) { color: var(--g0); }
