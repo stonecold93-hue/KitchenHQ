@@ -297,6 +297,14 @@
   }
   .cat-filter:hover:not(.active) { border-color: var(--g2); background: var(--g4); color: white; }
 
+  /* ── CAT SOUS-ONGLETS ── */
+  .cat-tab-bar { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .cat-tab-bar::-webkit-scrollbar { display: none; }
+  .cat-tab-btn { padding: 0.5rem 0.85rem; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .cat-tab-btn.active { color: var(--g2); border-bottom-color: var(--g2); }
+  .cat-tab-btn:hover:not(.active) { color: var(--g0); }
+  .cat-header-page { padding: 0.6rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; color: white; margin-bottom: 0.25rem; border-radius: 4px; opacity: 0.85; }
+
   /* ── SECTION TITLE ── */
   .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 1.5rem; letter-spacing: 0.08em; color: var(--g2); margin-bottom: 1.2rem; }
 
@@ -313,6 +321,8 @@
   .epicerie-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--g3); }
   .epicerie-item label { flex: 1; font-size: 0.82rem; cursor: pointer; color: var(--g0); }
   .epicerie-item label.checked { text-decoration: line-through; color: var(--muted); }
+  .store-select { background: var(--panel2); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; border-radius: 4px; padding: 0.2rem 0.4rem; cursor: pointer; min-width: 74px; }
+  .store-select:focus { outline: none; border-color: var(--g4); color: var(--g0); }
 
   /* ── SCAN RECETTE ── */
   .scan-recette-wrap {
@@ -716,6 +726,7 @@ document.getElementById('btn-logout').onclick = () => signOut(auth);
 let currentUid = null;
 let allItems = [];
 let cachedData = null; // Cache local des données Firebase
+let activeCatTab = 'frigo';
 
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -934,13 +945,7 @@ function subscribeAliments(ref, uid) {
 
       if (structure !== lastStructure) {
         lastStructure = structure;
-        const openCats = {};
-        document.querySelectorAll('#aliments-content .category').forEach(cat => {
-          const key = cat.dataset.catkey;
-          const body = cat.querySelector('.cat-body');
-          if (key && body) openCats[key] = !body.classList.contains('hidden');
-        });
-        renderAliments(data, uid, openCats);
+        renderAliments(data, uid);
       }
 
       // Sync allItems
@@ -1177,92 +1182,122 @@ async function initDefaultRecettes(uid) {
 }
 
 // ── RENDER ALIMENTS ──
-function renderAliments(data, uid, openCats = {}) {
+function renderAliments(data, uid) {
+  const container = document.getElementById('aliments-content');
+
+  // Construire la barre de sous-onglets si pas encore presente
+  let tabBar = document.getElementById('cat-tab-bar');
+  if (!tabBar) {
+    tabBar = document.createElement('div');
+    tabBar.id = 'cat-tab-bar';
+    tabBar.className = 'cat-tab-bar';
+    for (const [catKey, cat] of Object.entries(data)) {
+      const btn = document.createElement('button');
+      btn.className = 'cat-tab-btn' + (catKey === activeCatTab ? ' active' : '');
+      btn.dataset.cat = catKey;
+      btn.textContent = cat.label;
+      btn.onclick = () => {
+        activeCatTab = catKey;
+        document.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCatPage(data, uid, catKey);
+      };
+      tabBar.appendChild(btn);
+    }
+    container.parentNode.insertBefore(tabBar, container);
+  } else {
+    // Mettre a jour les labels si structure change
+    tabBar.innerHTML = '';
+    for (const [catKey, cat] of Object.entries(data)) {
+      const btn = document.createElement('button');
+      btn.className = 'cat-tab-btn' + (catKey === activeCatTab ? ' active' : '');
+      btn.dataset.cat = catKey;
+      btn.textContent = cat.label;
+      btn.onclick = () => {
+        activeCatTab = catKey;
+        document.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCatPage(data, uid, catKey);
+      };
+      tabBar.appendChild(btn);
+    }
+  }
+
+  // Si la categorie active nexiste plus, prendre la premiere
+  if (!data[activeCatTab]) {
+    activeCatTab = Object.keys(data)[0] || 'frigo';
+  }
+
+  renderCatPage(data, uid, activeCatTab);
+}
+
+function renderCatPage(data, uid, catKey) {
   const container = document.getElementById('aliments-content');
   container.innerHTML = '';
-  buildCatFilters(data);
-  // Snapshot data au moment du render pour les callbacks
-  const renderSnapshot = JSON.parse(JSON.stringify(data));
-  for (const [catKey, cat] of Object.entries(data)) {
-    const div = document.createElement('div');
-    div.className = 'category';
-    div.dataset.catkey = catKey;
-    const header = document.createElement('div');
-    header.className = 'cat-header';
-    header.style.background = cat.color;
-    header.innerHTML = `<span>${cat.label}</span><span class="toggle">▲</span>`;
-    const body = document.createElement('div');
-    body.className = 'cat-body';
-    // Restaurer état ouvert/fermé
-    const wasOpen = openCats[catKey] !== undefined ? openCats[catKey] : true;
-    if (!wasOpen) {
-      body.classList.add('hidden');
-      header.querySelector('.toggle').textContent = '▼';
-    }
-    header.onclick = () => {
-      body.classList.toggle('hidden');
-      header.querySelector('.toggle').textContent = body.classList.contains('hidden') ? '▼' : '▲';
+  const cat = data[catKey];
+  if (!cat) return;
+
+  const header = document.createElement('div');
+  header.className = 'cat-header-page';
+  header.style.background = cat.color;
+  header.innerHTML = '<span>' + cat.label + '</span>';
+  container.appendChild(header);
+
+  (cat.items || []).forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML =
+      '<span class="item-name">' + item.name + '</span>' +
+      '<span class="item-unit">' + (item.unit || '') + '</span>' +
+      '<div class="qty-controls">' +
+        '<button class="qty-btn minus">-</button>' +
+        '<input type="number" class="qty-value ' + (item.qty === 0 ? 'zero' : '') + '" value="' + item.qty + '" min="0"/>' +
+        '<button class="qty-btn plus">+</button>' +
+      '</div>' +
+      '<button class="cart-btn" title="Ajouter a l epicerie">&#x1F6D2;</button>' +
+      '<button class="delete-btn">&#x2715;</button>';
+
+    const qtyEl = row.querySelector('.qty-value');
+    row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1, qtyEl);
+    row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx,  1, qtyEl);
+    qtyEl.onchange = () => {
+      const newQty = Math.max(0, parseInt(qtyEl.value) || 0);
+      qtyEl.value = newQty;
+      qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
+      if (!cachedData || !cachedData[catKey] || !cachedData[catKey].items[idx]) return;
+      cachedData[catKey].items[idx] = { ...cachedData[catKey].items[idx], qty: newQty };
+      if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
+      updateDoc(alimentsRef, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments(alimentsRef, alimentsUid));
     };
-    (cat.items || []).forEach((item, idx) => {
-      const row = document.createElement('div');
-      row.className = 'item';
-      row.innerHTML = `
-        <span class="item-name">${item.name}</span>
-        <span class="item-unit">${item.unit || ''}</span>
-        <div class="qty-controls">
-          <button class="qty-btn minus">−</button>
-          <input type="number" class="qty-value ${item.qty === 0 ? 'zero' : ''}" value="${item.qty}" min="0"/>
-          <button class="qty-btn plus">+</button>
-        </div>
-        <button class="cart-btn" title="Ajouter à l'épicerie">🛒</button>
-        <button class="delete-btn">✕</button>
-      `;
-      const qtyEl = row.querySelector('.qty-value');
-      row.querySelector('.minus').onclick = () => updateQty(uid, catKey, idx, -1, qtyEl);
-      row.querySelector('.plus').onclick  = () => updateQty(uid, catKey, idx, 1, qtyEl);
-      // Édition directe du chiffre
-      qtyEl.onchange = () => {
-        const newQty = Math.max(0, parseInt(qtyEl.value) || 0);
-        qtyEl.value = newQty;
-        qtyEl.className = 'qty-value' + (newQty === 0 ? ' zero' : '');
-        if (!cachedData || !cachedData[catKey] || !cachedData[catKey].items[idx]) return;
-        cachedData[catKey].items[idx] = { ...cachedData[catKey].items[idx], qty: newQty };
-        if (unsubscribeAliments) { unsubscribeAliments(); unsubscribeAliments = null; }
-        updateDoc(alimentsRef, { [catKey + '.items']: cachedData[catKey].items }).then(() => subscribeAliments(alimentsRef, alimentsUid));
-      };
-      row.querySelector('.delete-btn').onclick = () => {
-        if (confirm(`Supprimer "${item.name}" ?`)) deleteItem(uid, catKey, idx);
-      };
-      const cartBtn = row.querySelector('.cart-btn');
-      cartBtn.onclick = async () => {
-        await addToEpicerie(item.name);
-        cartBtn.classList.add('added');
-        setTimeout(() => cartBtn.classList.remove('added'), 2000);
-      };
-      body.appendChild(row);
-    });
-    // Add row
-    const addRow = document.createElement('div');
-    addRow.className = 'add-row';
-    addRow.innerHTML = `
-      <input type="text" placeholder="Ajouter un item..." class="add-name"/>
-      <input type="text" placeholder="unité" style="width:80px;" class="add-unit"/>
-      <button>+ Ajouter</button>
-    `;
-    addRow.querySelector('button').onclick = () => {
-      const name = addRow.querySelector('.add-name').value.trim();
-      const unit = addRow.querySelector('.add-unit').value.trim();
-      if (!name) return;
-      const newItems = [...(data[catKey].items || []), { name, qty: 1, unit }];
-      saveCategory(uid, catKey, data, newItems);
-      addRow.querySelector('.add-name').value = '';
-      addRow.querySelector('.add-unit').value = '';
+    row.querySelector('.delete-btn').onclick = () => {
+      if (confirm('Supprimer ' + item.name + ' ?')) deleteItem(uid, catKey, idx);
     };
-    body.appendChild(addRow);
-    div.appendChild(header);
-    div.appendChild(body);
-    container.appendChild(div);
-  }
+    const cartBtn = row.querySelector('.cart-btn');
+    cartBtn.onclick = async () => {
+      await addToEpicerie(item.name);
+      cartBtn.classList.add('added');
+      setTimeout(() => cartBtn.classList.remove('added'), 2000);
+    };
+    container.appendChild(row);
+  });
+
+  // Ligne ajout
+  const addRow = document.createElement('div');
+  addRow.className = 'add-row';
+  addRow.innerHTML =
+    '<input type="text" placeholder="Ajouter un item..." class="add-name"/>' +
+    '<input type="text" placeholder="unite" style="width:80px;" class="add-unit"/>' +
+    '<button>+ Ajouter</button>';
+  addRow.querySelector('button').onclick = () => {
+    const name = addRow.querySelector('.add-name').value.trim();
+    const unit = addRow.querySelector('.add-unit').value.trim();
+    if (!name) return;
+    const newItems = [...(data[catKey].items || []), { name, qty: 1, unit }];
+    saveCategory(uid, catKey, data, newItems);
+    addRow.querySelector('.add-name').value = '';
+    addRow.querySelector('.add-unit').value = '';
+  };
+  container.appendChild(addRow);
 }
 
 async function updateQty(uid, catKey, idx, delta, qtyEl) {
@@ -1304,14 +1339,25 @@ function loadEpicerie(uid) {
       const item = d.data();
       const row = document.createElement('div');
       row.className = 'epicerie-item';
-      const id = `chk-${d.id}`;
-      row.innerHTML = `
-        <input type="checkbox" id="${id}" ${item.checked ? 'checked' : ''}/>
-        <label for="${id}" class="${item.checked ? 'checked' : ''}">${item.name}</label>
-        <button class="delete-btn" style="color:var(--muted)">✕</button>
-      `;
+      const id = 'chk-' + d.id;
+      const storeVal = item.store || '';
+      const storeOptions =
+        '<option value="">-</option>' +
+        '<option value="IGA"' + (storeVal === 'IGA' ? ' selected' : '') + '>IGA</option>' +
+        '<option value="Metro"' + (storeVal === 'Metro' ? ' selected' : '') + '>Metro</option>' +
+        '<option value="Maxi"' + (storeVal === 'Maxi' ? ' selected' : '') + '>Maxi</option>' +
+        '<option value="Walmart"' + (storeVal === 'Walmart' ? ' selected' : '') + '>Walmart</option>' +
+        '<option value="Costco"' + (storeVal === 'Costco' ? ' selected' : '') + '>Costco</option>';
+      row.innerHTML =
+        '<input type="checkbox" id="' + id + '" ' + (item.checked ? 'checked' : '') + '/>' +
+        '<label for="' + id + '" class="' + (item.checked ? 'checked' : '') + '">' + item.name + '</label>' +
+        '<select class="store-select">' + storeOptions + '</select>' +
+        '<button class="delete-btn" style="color:var(--muted)">&#x2715;</button>';
       row.querySelector('input').onchange = async (e) => {
         await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { checked: e.target.checked });
+      };
+      row.querySelector('.store-select').onchange = async (e) => {
+        await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { store: e.target.value });
       };
       row.querySelector('.delete-btn').onclick = async () => {
         await deleteDoc(doc(db, 'users', uid, 'epicerie', d.id));
@@ -1325,16 +1371,16 @@ async function addToEpicerie(name) {
   if (!epicerieUid) return;
   const snap = await getDocs(collection(db, 'users', epicerieUid, 'epicerie'));
   const existe = snap.docs.some(d => d.data().name.toLowerCase() === name.toLowerCase());
-  if (existe) { showToast(`⚠️ "${name}" déjà dans la liste`); return; }
-  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false });
-  showToast(`🛒 "${name}" ajouté à l'épicerie`);
+  if (existe) { showToast('Deja dans la liste : ' + name); return; }
+  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
+  showToast('Ajout epicerie : ' + name);
 }
 
 window.addEpicerieItem = async () => {
   const input = document.getElementById('epicerie-input');
   const name = input.value.trim();
   if (!name || !epicerieUid) return;
-  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false });
+  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
   input.value = '';
 };
 window.clearChecked = async () => {
