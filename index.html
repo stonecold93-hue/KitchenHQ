@@ -1734,13 +1734,12 @@ window.genererSuggestions = () => {
     let disponibles = 0;
 
     rec.ingredients.forEach(ing => {
-      const nomNorm = ing.nom.toLowerCase()
-        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s$/, '');
-      
+      const normaliser = (str) => str.toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s$/, '').trim();
+      const nomNorm = normaliser(ing.nom);
+
       const stockItem = allItems.find(item => {
-        const itemNorm = item.name.toLowerCase()
-          .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/s$/, '');
-        // Correspondance exacte ou inclusion complète du nom
+        const itemNorm = normaliser(item.name);
         return itemNorm === nomNorm ||
           itemNorm.includes(nomNorm) ||
           nomNorm.includes(itemNorm);
