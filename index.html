@@ -527,7 +527,7 @@
       <div class="home-search-wrap">
         <div class="search-bar" style="margin-bottom:0">
           <span class="search-icon">🔍</span>
-          <input type="search" id="home-search-input" placeholder="Rechercher un aliment..." oninput="homeSearch(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <input type="search" id="home-search-input" placeholder="Rechercher un aliment..." oninput="homeSearch(this.value)" onfocus="if(this.value==='Nhg'||this.value==='nhg')this.value=''" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
           <button class="search-clear" onclick="clearHomeSearch()">✕</button>
         </div>
         <div id="home-search-results" class="home-search-results hidden"></div>
@@ -601,7 +601,7 @@
     <div class="section" id="tab-aliments">
       <div class="search-bar">
         <span class="search-icon">🔍</span>
-        <input type="search" id="search-input" placeholder="Rechercher un aliment..." oninput="appliquerFiltres()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <input type="search" id="search-input" placeholder="Rechercher un aliment..." oninput="appliquerFiltres()" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
         <button class="search-clear" onclick="clearSearch()" title="Effacer">✕</button>
       </div>
       <div class="cat-filters" id="cat-filters">
@@ -2235,44 +2235,20 @@ window.setCatFilter = (btn) => {
 
 window.appliquerFiltres = () => {
   const q = document.getElementById('search-input').value.trim().toLowerCase();
-  const categories = document.querySelectorAll('#aliments-content .category');
-
-  categories.forEach(cat => {
-    const catKey = cat.dataset.catkey;
-    // Filtre catégorie
-    if (activeCatFilter !== 'tous' && catKey !== activeCatFilter) {
-      cat.style.display = 'none';
-      return;
-    }
-    // Filtre recherche
-    if (!q) {
-      cat.style.display = '';
-      cat.querySelectorAll('.item').forEach(i => i.style.display = '');
-      const addRow = cat.querySelector('.add-row');
-      if (addRow) addRow.style.display = '';
-      return;
-    }
-    const catItems = cat.querySelectorAll('.item');
-    let visible = 0;
-    catItems.forEach(item => {
-      const name = item.querySelector('.item-name');
-      if (name && name.textContent.toLowerCase().includes(q)) {
-        item.style.display = '';
-        visible++;
-      } else {
-        item.style.display = 'none';
-      }
-    });
-    const addRow = cat.querySelector('.add-row');
-    if (addRow) addRow.style.display = 'none';
-    cat.style.display = visible === 0 ? 'none' : '';
-    if (visible > 0) {
-      const body = cat.querySelector('.cat-body');
-      const toggle = cat.querySelector('.toggle');
-      if (body) body.classList.remove('hidden');
-      if (toggle) toggle.textContent = '▲';
-    }
+  if (!q) {
+    // Pas de recherche — afficher la page active normalement
+    document.querySelectorAll('#aliments-content .item').forEach(i => i.style.display = '');
+    const addRow = document.querySelector('#aliments-content .add-row');
+    if (addRow) addRow.style.display = '';
+    return;
+  }
+  // Filtrer les items de la page active
+  document.querySelectorAll('#aliments-content .item').forEach(item => {
+    const name = item.querySelector('.item-name');
+    item.style.display = (name && name.textContent.toLowerCase().includes(q)) ? '' : 'none';
   });
+  const addRow = document.querySelector('#aliments-content .add-row');
+  if (addRow) addRow.style.display = 'none';
 };
 
 window.clearSearch = () => {
