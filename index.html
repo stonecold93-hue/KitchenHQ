@@ -430,6 +430,33 @@
   .stock-cart:hover { background: rgba(90,180,240,0.1); }
   .recette-detail-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--g1); margin-bottom: 0.3rem; }
   .recette-detail-notes { font-size: 0.78rem; color: var(--g0); font-style: italic; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); line-height: 1.6; }
+
+  /* ── REPAS ── */
+  .repas-week-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .repas-week-label { font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem; }
+  .repas-week-range { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; color: var(--g1); }
+  .repas-nav-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 0.65rem; letter-spacing: 0.08em; cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; }
+  .repas-nav-btn:hover { border-color: var(--g4); color: var(--g2); }
+  .repas-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .repas-col-header { padding: 0.5rem 0.75rem; background: #040f1e; border-bottom: 1px solid var(--border); font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--g3); text-align: center; }
+  .repas-col-header:first-child { border-right: 1px solid var(--border); }
+  .repas-cell {
+    padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    min-height: 68px; cursor: pointer; transition: background 0.15s;
+    display: flex; flex-direction: column; gap: 0.25rem;
+  }
+  .repas-cell:nth-child(even) { border-right: none; }
+  .repas-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .repas-cell:hover { background: #071428; }
+  .repas-cell-day { font-size: 0.55rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .repas-cell-name { font-size: 0.82rem; color: var(--g1); line-height: 1.3; }
+  .repas-cell-tag { display: inline-block; font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.1rem 0.4rem; border-radius: 3px; background: #0a2240; color: var(--g3); margin-top: auto; width: fit-content; }
+  .repas-cell-tag.manuel { background: #071428; color: var(--muted); }
+  .repas-cell-empty { font-size: 0.72rem; color: var(--border); display: flex; align-items: center; gap: 0.35rem; margin-top: auto; }
+  .repas-cell-empty svg { opacity: 0.4; }
 </style>
 
 </head>
@@ -494,6 +521,7 @@
     <button class="tab" data-tab="aliments">🥘 Aliments</button>
     <button class="tab" data-tab="recettes">👨‍🍳 Recettes</button>
     <button class="tab" data-tab="epicerie">🛒 Épicerie</button>
+    <button class="tab" data-tab="repas">🍽️ Repas</button>
   </div>
 
   <div class="content">
@@ -642,6 +670,24 @@
       <div class="recette-list" id="recette-list"></div>
     </div>
 
+    <!-- REPAS -->
+    <div class="section" id="tab-repas">
+      <div class="repas-week-header">
+        <div>
+          <div class="repas-week-label">Semaine</div>
+          <div class="repas-week-range" id="repas-week-range">Samedi — Vendredi</div>
+        </div>
+        <div style="display:flex;gap:0.4rem">
+          <button class="repas-nav-btn" onclick="repasNavSemaine(-1)">&#8249; Préc</button>
+          <button class="repas-nav-btn" onclick="repasNavSemaine(1)">Suiv &#8250;</button>
+        </div>
+      </div>
+      <div class="repas-grid" id="repas-grid">
+        <div class="repas-col-header">Dîner</div>
+        <div class="repas-col-header">Souper</div>
+      </div>
+    </div>
+
     <!-- ÉPICERIE -->
     <div class="section" id="tab-epicerie">
       <div class="section-title">Liste d'Épicerie</div>
@@ -653,6 +699,36 @@
       <div id="epicerie-list" class="category"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- MODAL REPAS -->
+<div class="modal-overlay hidden" id="modal-repas">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title" id="modal-repas-title">Ajouter un repas</div>
+    <div id="modal-repas-jour" style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:-0.5rem"></div>
+
+    <!-- Choisir depuis recettes -->
+    <div>
+      <div class="modal-label">Choisir une recette</div>
+      <select id="repas-recette-select" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0.5rem 0.7rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none">
+        <option value="">-- Aucune --</option>
+      </select>
+    </div>
+
+    <div style="text-align:center;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em">— ou —</div>
+
+    <!-- Saisie manuelle -->
+    <div>
+      <div class="modal-label">Saisie manuelle</div>
+      <input type="text" id="repas-manuel-input" placeholder="Ex: Soupe aux légumes..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:0.5rem 0.7rem;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none" autocomplete="off" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fermerModal('modal-repas')">Annuler</button>
+      <button class="btn-gold primary" id="repas-delete-btn" style="display:none;color:#a03020;border-color:#3a1a10" onclick="supprimerRepas()">🗑 Supprimer</button>
+      <button class="btn-gold primary" onclick="sauvegarderRepas()">💾 Sauvegarder</button>
+    </div>
   </div>
 </div>
 
@@ -758,6 +834,9 @@ window.goTab = function(tabName) {
   if (tabSection) tabSection.classList.add('active');
   if (tabName === 'aliments' && cachedData && alimentsUid) {
     renderAliments(cachedData, alimentsUid);
+  }
+  if (tabName === 'repas' && currentUid) {
+    loadRepas(currentUid);
   }
 }
 
@@ -998,6 +1077,7 @@ async function loadAll(uid) {
   loadRecettes(uid);
   initDefaultRecettes(uid);
   loadApiKey(uid);
+  // Repas charge seulement si l'onglet est actif — sinon charge au clic
 }
 
 // Recettes par défaut — chacune a un slug unique pour éviter les doublons
@@ -1405,7 +1485,9 @@ let editingRecetteId = null;
 function loadRecettes(uid) {
   onSnapshot(collection(db, 'users', uid, 'recettes'), snap => {
     recettesData = {};
-    snap.forEach(d => { recettesData[d.id] = d.data(); });
+    snap.forEach(d => { recettesData[d.id] = { ...d.data(), id: d.id }; });
+    // Exposer pour le modal repas
+    window.cachedRecettes = Object.values(recettesData).sort((a,b) => (a.nom||'').localeCompare(b.nom||''));
     renderRecettes();
   });
 }
@@ -2254,6 +2336,163 @@ window.appliquerFiltres = () => {
 window.clearSearch = () => {
   document.getElementById('search-input').value = '';
   appliquerFiltres();
+};
+
+// ── REPAS ──
+const JOURS = ['Samedi','Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
+const REPAS_TYPES = ['diner','souper'];
+
+let repasWeekOffset = 0; // 0 = semaine courante
+let repasCellCurrent = null; // { jourIndex, type } en cours d'edition
+
+function getRepasWeekStart(offset) {
+  // Samedi de la semaine courante (offset=0)
+  const now = new Date();
+  const day = now.getDay(); // 0=dim, 1=lun... 6=sam
+  const diffToSat = (day === 6) ? 0 : -(day + 1);
+  const sat = new Date(now);
+  sat.setDate(now.getDate() + diffToSat + offset * 7);
+  sat.setHours(0,0,0,0);
+  return sat;
+}
+
+function repasWeekKey(offset) {
+  const d = getRepasWeekStart(offset);
+  return d.toISOString().slice(0,10); // YYYY-MM-DD du samedi
+}
+
+function renderRepasWeek(data) {
+  const grid = document.getElementById('repas-grid');
+  // Garder les 2 headers
+  grid.innerHTML = '<div class="repas-col-header">Diner</div><div class="repas-col-header">Souper</div>';
+
+  const weekKey = repasWeekKey(repasWeekOffset);
+
+  JOURS.forEach((jour, idx) => {
+    REPAS_TYPES.forEach(type => {
+      const key = weekKey + '_' + idx + '_' + type;
+      const repas = data[key];
+      const cell = document.createElement('div');
+      cell.className = 'repas-cell';
+      cell.onclick = () => ouvrirModalRepas(idx, type, repas || null);
+
+      const dayEl = document.createElement('div');
+      dayEl.className = 'repas-cell-day';
+      dayEl.textContent = jour;
+      cell.appendChild(dayEl);
+
+      if (repas && repas.nom) {
+        const nameEl = document.createElement('div');
+        nameEl.className = 'repas-cell-name';
+        nameEl.textContent = repas.nom;
+        cell.appendChild(nameEl);
+
+        const tagEl = document.createElement('div');
+        tagEl.className = 'repas-cell-tag' + (repas.source === 'manuel' ? ' manuel' : '');
+        tagEl.textContent = repas.source === 'manuel' ? 'manuel' : 'recette';
+        cell.appendChild(tagEl);
+      } else {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'repas-cell-empty';
+        emptyEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><line x1="6" y1="3" x2="6" y2="9" stroke="currentColor" stroke-width="1"/><line x1="3" y1="6" x2="9" y2="6" stroke="currentColor" stroke-width="1"/></svg>Ajouter';
+        cell.appendChild(emptyEl);
+      }
+
+      grid.appendChild(cell);
+    });
+  });
+}
+
+window.repasNavSemaine = (dir) => {
+  repasWeekOffset += dir;
+  const start = getRepasWeekStart(repasWeekOffset);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  document.getElementById('repas-week-range').textContent =
+    'Samedi — Vendredi';
+  loadRepas(currentUid);
+};
+
+let repasData = {};
+
+async function loadRepas(uid) {
+  const weekKey = repasWeekKey(repasWeekOffset);
+  const ref = doc(db, 'users', uid, 'repas', weekKey);
+  const snap = await getDoc(ref);
+  repasData = snap.exists() ? snap.data() : {};
+  renderRepasWeek(repasData);
+}
+
+function ouvrirModalRepas(jourIndex, type, repasExistant) {
+  repasCellCurrent = { jourIndex, type };
+
+  document.getElementById('modal-repas-title').textContent =
+    (repasExistant ? 'Modifier' : 'Ajouter') + ' un repas';
+  document.getElementById('modal-repas-jour').textContent =
+    JOURS[jourIndex] + ' — ' + (type === 'diner' ? 'Diner' : 'Souper');
+
+  // Peupler select recettes
+  const sel = document.getElementById('repas-recette-select');
+  sel.innerHTML = '<option value="">-- Aucune --</option>';
+  // Utiliser les recettes en memoire (cachedRecettes)
+  if (window.cachedRecettes) {
+    window.cachedRecettes.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = r.nom;
+      if (repasExistant && repasExistant.source === 'recette' && repasExistant.recetteId === r.id) {
+        opt.selected = true;
+      }
+      sel.appendChild(opt);
+    });
+  }
+
+  // Saisie manuelle
+  const manuelInput = document.getElementById('repas-manuel-input');
+  manuelInput.value = (repasExistant && repasExistant.source === 'manuel') ? repasExistant.nom : '';
+
+  // Bouton supprimer
+  const deleteBtn = document.getElementById('repas-delete-btn');
+  deleteBtn.style.display = repasExistant ? 'inline-flex' : 'none';
+
+  document.getElementById('modal-repas').classList.remove('hidden');
+  document.getElementById('modal-repas').style.display = 'flex';
+}
+
+window.sauvegarderRepas = async () => {
+  const sel = document.getElementById('repas-recette-select');
+  const manuelVal = document.getElementById('repas-manuel-input').value.trim();
+
+  let repasObj = null;
+  if (sel.value) {
+    const recette = window.cachedRecettes && window.cachedRecettes.find(r => r.id === sel.value);
+    repasObj = { nom: recette ? recette.nom : sel.options[sel.selectedIndex].text, source: 'recette', recetteId: sel.value };
+  } else if (manuelVal) {
+    repasObj = { nom: manuelVal, source: 'manuel' };
+  } else {
+    showToast('Entrez un repas ou choisissez une recette');
+    return;
+  }
+
+  const weekKey = repasWeekKey(repasWeekOffset);
+  const cellKey = weekKey + '_' + repasCellCurrent.jourIndex + '_' + repasCellCurrent.type;
+  repasData[cellKey] = repasObj;
+
+  await setDoc(doc(db, 'users', currentUid, 'repas', weekKey), repasData);
+  fermerModal('modal-repas');
+  renderRepasWeek(repasData);
+  showToast('Repas sauvegarde !');
+};
+
+window.supprimerRepas = async () => {
+  const weekKey = repasWeekKey(repasWeekOffset);
+  const cellKey = weekKey + '_' + repasCellCurrent.jourIndex + '_' + repasCellCurrent.type;
+  delete repasData[cellKey];
+
+  await setDoc(doc(db, 'users', currentUid, 'repas', weekKey), repasData);
+  fermerModal('modal-repas');
+  renderRepasWeek(repasData);
+  showToast('Repas retire');
 };
 
 function buildCatFilters(data) {
