@@ -1434,7 +1434,9 @@ function loadEpicerie(uid) {
         '<option value="Metro"' + (storeVal === 'Metro' ? ' selected' : '') + '>Metro</option>' +
         '<option value="Maxi"' + (storeVal === 'Maxi' ? ' selected' : '') + '>Maxi</option>' +
         '<option value="Walmart"' + (storeVal === 'Walmart' ? ' selected' : '') + '>Walmart</option>' +
-        '<option value="Costco"' + (storeVal === 'Costco' ? ' selected' : '') + '>Costco</option>';
+        '<option value="Costco"' + (storeVal === 'Costco' ? ' selected' : '') + '>Costco</option>' +
+        '<option value="Super C"' + (storeVal === 'Super C' ? ' selected' : '') + '>Super C</option>' +
+        '<option value="Richelieu"' + (storeVal === 'Richelieu' ? ' selected' : '') + '>Richelieu</option>';
       const prixVal = item.prix || '';
       row.innerHTML =
         '<input type="checkbox" id="' + id + '" ' + (item.checked ? 'checked' : '') + '/>' +
