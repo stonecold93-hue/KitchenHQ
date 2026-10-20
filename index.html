@@ -790,9 +790,20 @@ const firebaseConfig = {
   appId: "1:796308500895:web:4ef46abd88ac6514e70daa"
 };
 
+const shoppingConfig = {
+  apiKey: "AIzaSyDd4i9kw_tVWVtdTcML_xEuR1qWScMAgAo",
+  authDomain: "shoppinghq-543f9.firebaseapp.com",
+  projectId: "shoppinghq-543f9",
+  storageBucket: "shoppinghq-543f9.firebasestorage.app",
+  messagingSenderId: "12958975168",
+  appId: "1:12958975168:web:a6d28cbe8c187a41b1d925"
+};
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const appShopping = initializeApp(shoppingConfig, 'shopping');
+const dbShopping = getFirestore(appShopping);
 
 // ── TOAST ──
 function showToast(msg) {
@@ -1415,11 +1426,11 @@ async function saveCategory(uid, catKey, data, newItems) {
   await updateDoc(ref, { [catKey + '.items']: newItems });
 }
 
-// ── ÉPICERIE ──
+// ── ÉPICERIE (lit/écrit dans ShoppingHQ Firebase) ──
 let epicerieUid = null;
 function loadEpicerie(uid) {
   epicerieUid = uid;
-  onSnapshot(collection(db, 'users', uid, 'epicerie'), snap => {
+  onSnapshot(collection(dbShopping, 'users', uid, 'epicerie'), snap => {
     const list = document.getElementById('epicerie-list');
     list.innerHTML = '';
     snap.forEach(d => {
@@ -1445,16 +1456,16 @@ function loadEpicerie(uid) {
         '<input type="text" class="prix-input" placeholder="prix" value="' + prixVal + '" inputmode="decimal"/>' +
         '<button class="delete-btn" style="color:var(--muted)">&#x2715;</button>';
       row.querySelector('input[type="checkbox"]').onchange = async (e) => {
-        await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { checked: e.target.checked });
+        await updateDoc(doc(dbShopping, 'users', uid, 'epicerie', d.id), { checked: e.target.checked });
       };
       row.querySelector('.store-select').onchange = async (e) => {
-        await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { store: e.target.value });
+        await updateDoc(doc(dbShopping, 'users', uid, 'epicerie', d.id), { store: e.target.value });
       };
       row.querySelector('.prix-input').onblur = async (e) => {
-        await updateDoc(doc(db, 'users', uid, 'epicerie', d.id), { prix: e.target.value.trim() });
+        await updateDoc(doc(dbShopping, 'users', uid, 'epicerie', d.id), { prix: e.target.value.trim() });
       };
       row.querySelector('.delete-btn').onclick = async () => {
-        await deleteDoc(doc(db, 'users', uid, 'epicerie', d.id));
+        await deleteDoc(doc(dbShopping, 'users', uid, 'epicerie', d.id));
       };
       list.appendChild(row);
     });
@@ -1463,10 +1474,10 @@ function loadEpicerie(uid) {
 
 async function addToEpicerie(name) {
   if (!epicerieUid) return;
-  const snap = await getDocs(collection(db, 'users', epicerieUid, 'epicerie'));
+  const snap = await getDocs(collection(dbShopping, 'users', epicerieUid, 'epicerie'));
   const existe = snap.docs.some(d => d.data().name.toLowerCase() === name.toLowerCase());
   if (existe) { showToast('Deja dans la liste : ' + name); return; }
-  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
+  await addDoc(collection(dbShopping, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
   showToast('Ajout epicerie : ' + name);
 }
 
@@ -1474,11 +1485,11 @@ window.addEpicerieItem = async () => {
   const input = document.getElementById('epicerie-input');
   const name = input.value.trim();
   if (!name || !epicerieUid) return;
-  await addDoc(collection(db, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
+  await addDoc(collection(dbShopping, 'users', epicerieUid, 'epicerie'), { name, checked: false, store: '' });
   input.value = '';
 };
 window.clearChecked = async () => {
-  const items = await getDocs(collection(db, 'users', epicerieUid, 'epicerie'));
+  const items = await getDocs(collection(dbShopping, 'users', epicerieUid, 'epicerie'));
   items.forEach(async d => { if (d.data().checked) await deleteDoc(d.ref); });
 };
 document.getElementById('epicerie-input').addEventListener('keydown', e => {
