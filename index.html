@@ -11,13 +11,15 @@
 <style>
 :root {
     --g0: #EFF8FF; --g1: #BAE0FF; --g2: #2389D4; --g3: #0F6EB8; --g4: #0A4E84; --g5: #061E30;
-    --bg: #000000; --panel: #080808; --panel2: #0f0f0f; --text: #FFFFFF; --muted: #666666; --border: #2a2a2a;
+    --bg: #000000; --panel: #080808; --panel2: #0f0f0f; --text: #FFFFFF; --muted: #AAAAAA; --border: #2389D4;
     --gold: #F4A623;
   }
   html[data-theme="light"] {
-    --bg: #F5F5F0; --panel: #FFFFFF; --panel2: #EFEFEA; --text: #111111; --muted: #666666; --border: #DDDDDD;
+    --bg: #FFFFFF; --panel: #E0F4FF; --panel2: #E0F4FF; --text: #000000; --muted: #555555; --border: #2389D4;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  *:focus { outline: none; }
+  *:focus-visible { outline: 1px solid var(--gold); outline-offset: 2px; }
   body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; }
 
   /* ── AUTH ── */
@@ -316,7 +318,7 @@
   .cat-tab-btn { padding: 0.5rem 0.85rem; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
   .cat-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
   .cat-tab-btn:hover:not(.active) { color: var(--text); }
-  .cat-header-page { padding: 0.6rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; color: white; margin-bottom: 0.25rem; border-radius: 4px; opacity: 0.85; }
+  .cat-header-page { padding: 0.6rem 1rem; font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.06em; color: var(--gold); margin-bottom: 0.25rem; border-radius: 4px; background: var(--panel) !important; border-left: 2px solid var(--gold); opacity: 1; }
 
   /* ── SECTION TITLE ── */
   .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 1.5rem; letter-spacing: 0.08em; color: var(--text); margin-bottom: 1.2rem; }
@@ -849,7 +851,7 @@ window.goTab = function(tabName) {
 
 // ── DEFAULT DATA ──
 const SECTIONS = {
-  frigo: { label: "Frigo", color: "#071828", items: [
+  frigo: { label: "Frigo", color: "#101010", items: [
     { name: "Lait", qty: 0, unit: "unité" },
     { name: "Œuf", qty: 0, unit: "unité" },
     { name: "Beurre", qty: 0, unit: "unité" },
@@ -871,7 +873,7 @@ const SECTIONS = {
     { name: "Jambon fumé", qty: 1, unit: "675g" },
     { name: "Pomme de terre", qty: 0, unit: "unité" },
   ]},
-  congelateur: { label: "Congelateur", color: "#0a2a4a", items: [
+  congelateur: { label: "Congelateur", color: "#101010", items: [
     { name: "Bœuf haché", qty: 5, unit: "sac ziploc" },
     { name: "Cubes de Bœuf", qty: 4, unit: "unité" },
     { name: "Boulette Hamburger", qty: 1, unit: "unité" },
@@ -907,7 +909,7 @@ const SECTIONS = {
     { name: "Sauce brune", qty: 1, unit: "unité" },
     { name: "Coulis de Tomate", qty: 5, unit: "petit ziploc" },
   ]},
-  gardeManger: { label: "Garde-Manger", color: "#0a3a5a", items: [
+  gardeManger: { label: "Garde-Manger", color: "#101010", items: [
     { name: "Spaghettini", qty: 0, unit: "boîte" },
     { name: "Spaghetti", qty: 0, unit: "boîte" },
     { name: "Lasagne", qty: 0, unit: "boîte" },
@@ -930,7 +932,7 @@ const SECTIONS = {
     { name: "Levure machine à pain", qty: 0, unit: "pot" },
     { name: "Nescafé Gold Espresso décaféiné", qty: 2, unit: "pot 90g" },
   ]},
-  conserves: { label: "Conserves", color: "#0a1e3a", items: [
+  conserves: { label: "Conserves", color: "#101010", items: [
     { name: "Maïs en grains", qty: 2, unit: "canette" },
     { name: "Jus de tomate", qty: 1, unit: "canette" },
     { name: "Sauce tomate", qty: 3, unit: "canette" },
@@ -945,7 +947,7 @@ const SECTIONS = {
     { name: "Tomate en boîte", qty: 0, unit: "boîte 796ml" },
     { name: "Pâte de tomates", qty: 0, unit: "boîte 156ml" },
   ]},
-  condiments: { label: "Condiments & Huiles", color: "#0e1a3a", items: [
+  condiments: { label: "Condiments & Huiles", color: "#101010", items: [
     { name: "Sauce Worcestershire", qty: 2, unit: "bouteille" },
     { name: "Huile de sésame", qty: 1, unit: "bouteille" },
     { name: "Bovril bœuf", qty: 1, unit: "bouteille" },
@@ -958,7 +960,7 @@ const SECTIONS = {
     { name: "Moutarde de Dijon", qty: 0, unit: "pot" },
     { name: "Vinaigre de cidre", qty: 0, unit: "bouteille" },
   ]},
-  collation: { label: "Collations", color: "#062030", items: [
+  collation: { label: "Collations", color: "#101010", items: [
     { name: "Cookies & Cream spread", qty: 1, unit: "pot" },
     { name: "Goldfish Explosion de pizza", qty: 2, unit: "boîte" },
     { name: "Jos Louis Vachon", qty: 1, unit: "boîte 6 gâteaux" },
@@ -968,7 +970,7 @@ const SECTIONS = {
     { name: "Croustilles BBQ mesquite Irrésistible", qty: 1, unit: "sac 150g" },
     { name: "Fruit-O-Long collations roulées", qty: 2, unit: "sac 128g" },
   ]},
-  epices: { label: "Epices & Herbes", color: "#0a2030", items: [
+  epices: { label: "Epices & Herbes", color: "#101010", items: [
     { name: "Sel", qty: 1, unit: "canette" },
     { name: "Poivre noir moulu", qty: 1, unit: "sachet" },
     { name: "Poivre de Cayenne broyé", qty: 1, unit: "pot" },
