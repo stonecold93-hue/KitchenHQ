@@ -92,13 +92,13 @@
   .topnav-orn-gem { width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
   .topnav-logo-inner { display: flex; align-items: baseline; }
   .topnav-wm-kitchen {
-    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 20px;
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 26px;
     background: linear-gradient(170deg, #FFFBF0, #F9E07F, #F4A623, #C47D0E, #8A5600);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .topnav-wm-sep { width: 0.5px; height: 14px; background: #333; margin: 0 6px; align-self: center; }
+  .topnav-wm-sep { width: 0.5px; height: 18px; background: #333; margin: 0 8px; align-self: center; }
   .topnav-wm-hq {
-    font-family: 'Just Another Hand', cursive; font-size: 18px;
+    font-family: 'Just Another Hand', cursive; font-size: 24px;
     color: var(--g1); display: inline-block; transform: rotate(-2deg);
   }
   .topnav-user { display: flex; align-items: center; gap: 0.5rem; }
@@ -110,8 +110,8 @@
   .tabs { display: flex; gap: 0; padding: 0 1rem; overflow-x: auto; background: #000; border-bottom: 1px solid var(--border); scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .tab { display: flex; align-items: center; padding: 0.6rem 1rem; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; cursor: pointer; white-space: nowrap; transition: all 0.15s; height: 38px; }
-  .tab.active { color: #fff; border-bottom-color: var(--g2); }
-  .tab:hover:not(.active) { color: var(--g1); }
+  .tab.active { color: #fff; border-bottom-color: var(--gold); }
+  .tab:hover:not(.active) { color: #ccc; }
 
   /* ── CONTENT ── */
   .content { max-width: 760px; margin: 0 auto; padding: 1.5rem; }
@@ -160,7 +160,7 @@
   .add-row { display: flex; gap: 0.5rem; padding: 0.55rem 1.25rem 0.7rem; border-top: 1px dashed var(--border); flex-wrap: wrap; }
   .add-row input { flex: 1; min-width: 120px; border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.65rem; font-family: 'DM Mono', monospace; font-size: 0.75rem; outline: none; background: var(--bg); color: var(--text); transition: border 0.15s; }
   .add-row input:focus { border-color: var(--g4); }
-  .add-row button { padding: 0.35rem 0.85rem; border-radius: 4px; border: 1px solid var(--g4); background: transparent; color: var(--g2); font-family: 'DM Mono', monospace; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
+  .add-row button { padding: 0.35rem 0.85rem; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
   .add-row button:hover { background: rgba(90,180,240,0.08); }
   .hidden { display: none !important; }
   .modal-overlay { display: flex; }
@@ -215,7 +215,7 @@
   .home-search-item:hover { background: rgba(90,180,240,0.08); }
   .home-search-item-name { font-size: 0.8rem; color: var(--g0); }
   .home-search-item-qty { font-size: 0.72rem; color: var(--muted); }
-  .home-search-item-cart { background: transparent; border: 1px solid var(--g4); border-radius: 4px; padding: 0.15rem 0.4rem; color: var(--g2); font-size: 0.6rem; cursor: pointer; }
+  .home-search-item-cart { background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.4rem; color: var(--text); font-size: 0.6rem; cursor: pointer; }
 
   /* 3 cartes */
   .home-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
@@ -226,7 +226,7 @@
   }
   .home-card:hover { border-color: var(--g4); background: var(--panel2); box-shadow: 0 0 15px rgba(90,180,240,0.1); transform: translateY(-2px); }
   .home-card-icon { font-size: 1.8rem; }
-  .home-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: var(--g1); }
+  .home-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: var(--text); }
   .home-card-sub { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.05em; }
 
   /* Scan section */
@@ -237,14 +237,14 @@
   .home-scan-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: var(--text); }
   .home-scan-sub { font-size: 0.72rem; color: #888; line-height: 1.5; }
   .home-scan-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .home-scan-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; border-radius: 4px; border: 1px solid var(--g4); background: transparent; color: var(--g2); font-family: 'DM Mono', monospace; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
+  .home-scan-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; }
   .home-scan-btn:hover { background: rgba(90,180,240,0.08); }
-  .home-scan-status { font-size: 0.75rem; color: var(--g2); letter-spacing: 0.05em; padding: 0.5rem 0; }
+  .home-scan-status { font-size: 0.75rem; color: #888; letter-spacing: 0.05em; padding: 0.5rem 0; }
   .scan-result-item { display: flex; flex-direction: column; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); background: var(--panel2); border-radius: 4px; margin-bottom: 0.3rem; overflow: hidden; }
   .scan-result-name { font-size: 0.8rem; color: var(--g0); }
   .scan-result-actions { display: flex; gap: 0.4rem; align-items: center; }
   .scan-cat-select { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.4rem; font-size: 0.65rem; font-family: 'DM Mono', monospace; }
-  .scan-add-btn { background: transparent; border: 1px solid var(--g4); border-radius: 4px; padding: 0.2rem 0.5rem; color: var(--g2); font-size: 0.65rem; cursor: pointer; font-family: 'DM Mono', monospace; }
+  .scan-add-btn { background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 0.2rem 0.5rem; color: var(--text); font-size: 0.65rem; cursor: pointer; font-family: 'DM Mono', monospace; }
 
   /* ── SEARCH + FILTER ── */
   .search-bar {
@@ -293,12 +293,12 @@
     transition: all 0.15s;
   }
   .cat-filter.active {
-    border-color: var(--g2);
-    color: white;
-    background: var(--g3);
-    box-shadow: 0 0 8px rgba(90,180,240,0.3);
+    border-color: var(--gold);
+    color: var(--gold);
+    background: #100800;
+    box-shadow: 0 0 8px rgba(244,166,35,0.2);
   }
-  .cat-filter:hover:not(.active) { border-color: var(--g2); background: var(--g4); color: white; }
+  .cat-filter:hover:not(.active) { border-color: #444; background: #111; color: #ccc; }
 
   /* ── CAT SOUS-ONGLETS ── */
   .cat-tab-bar { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
@@ -829,7 +829,7 @@ window.goTab = function(tabName) {
 
 // ── DEFAULT DATA ──
 const SECTIONS = {
-  frigo: { label: "🧊 Frigo", color: "#071828", items: [
+  frigo: { label: "Frigo", color: "#071828", items: [
     { name: "Lait", qty: 0, unit: "unité" },
     { name: "Œuf", qty: 0, unit: "unité" },
     { name: "Beurre", qty: 0, unit: "unité" },
@@ -851,7 +851,7 @@ const SECTIONS = {
     { name: "Jambon fumé", qty: 1, unit: "675g" },
     { name: "Pomme de terre", qty: 0, unit: "unité" },
   ]},
-  congelateur: { label: "❄️ Congélateur", color: "#0a2a4a", items: [
+  congelateur: { label: "Congelateur", color: "#0a2a4a", items: [
     { name: "Bœuf haché", qty: 5, unit: "sac ziploc" },
     { name: "Cubes de Bœuf", qty: 4, unit: "unité" },
     { name: "Boulette Hamburger", qty: 1, unit: "unité" },
@@ -887,7 +887,7 @@ const SECTIONS = {
     { name: "Sauce brune", qty: 1, unit: "unité" },
     { name: "Coulis de Tomate", qty: 5, unit: "petit ziploc" },
   ]},
-  gardeManger: { label: "🏠 Garde-Manger", color: "#0a3a5a", items: [
+  gardeManger: { label: "Garde-Manger", color: "#0a3a5a", items: [
     { name: "Spaghettini", qty: 0, unit: "boîte" },
     { name: "Spaghetti", qty: 0, unit: "boîte" },
     { name: "Lasagne", qty: 0, unit: "boîte" },
@@ -910,7 +910,7 @@ const SECTIONS = {
     { name: "Levure machine à pain", qty: 0, unit: "pot" },
     { name: "Nescafé Gold Espresso décaféiné", qty: 2, unit: "pot 90g" },
   ]},
-  conserves: { label: "🥫 Conserves", color: "#0a1e3a", items: [
+  conserves: { label: "Conserves", color: "#0a1e3a", items: [
     { name: "Maïs en grains", qty: 2, unit: "canette" },
     { name: "Jus de tomate", qty: 1, unit: "canette" },
     { name: "Sauce tomate", qty: 3, unit: "canette" },
@@ -925,7 +925,7 @@ const SECTIONS = {
     { name: "Tomate en boîte", qty: 0, unit: "boîte 796ml" },
     { name: "Pâte de tomates", qty: 0, unit: "boîte 156ml" },
   ]},
-  condiments: { label: "🫙 Condiments & Huiles", color: "#0e1a3a", items: [
+  condiments: { label: "Condiments & Huiles", color: "#0e1a3a", items: [
     { name: "Sauce Worcestershire", qty: 2, unit: "bouteille" },
     { name: "Huile de sésame", qty: 1, unit: "bouteille" },
     { name: "Bovril bœuf", qty: 1, unit: "bouteille" },
@@ -938,7 +938,7 @@ const SECTIONS = {
     { name: "Moutarde de Dijon", qty: 0, unit: "pot" },
     { name: "Vinaigre de cidre", qty: 0, unit: "bouteille" },
   ]},
-  collation: { label: "🍿 Collations", color: "#062030", items: [
+  collation: { label: "Collations", color: "#062030", items: [
     { name: "Cookies & Cream spread", qty: 1, unit: "pot" },
     { name: "Goldfish Explosion de pizza", qty: 2, unit: "boîte" },
     { name: "Jos Louis Vachon", qty: 1, unit: "boîte 6 gâteaux" },
@@ -948,7 +948,7 @@ const SECTIONS = {
     { name: "Croustilles BBQ mesquite Irrésistible", qty: 1, unit: "sac 150g" },
     { name: "Fruit-O-Long collations roulées", qty: 2, unit: "sac 128g" },
   ]},
-  epices: { label: "🧂 Épices & Herbes", color: "#0a2030", items: [
+  epices: { label: "Epices & Herbes", color: "#0a2030", items: [
     { name: "Sel", qty: 1, unit: "canette" },
     { name: "Poivre noir moulu", qty: 1, unit: "sachet" },
     { name: "Poivre de Cayenne broyé", qty: 1, unit: "pot" },
