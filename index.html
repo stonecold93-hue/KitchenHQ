@@ -6,11 +6,12 @@
 <title>KitchenHQ</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&family=DM+Mono:wght@300;400;500&family=Just+Another+Hand&display=swap" rel="stylesheet">
 <style>
 :root {
-    --g0: #EFF8FF; --g1: #BAE0FF; --g2: #5AB4F0; --g3: #1A7EC4; --g4: #0A4E84; --g5: #061E30;
-    --bg: #020810; --panel: #040f1e; --panel2: #071428; --text: #EFF8FF; --muted: #3a6080; --border: #0a2240;
+    --g0: #EFF8FF; --g1: #BAE0FF; --g2: #2389D4; --g3: #0F6EB8; --g4: #0A4E84; --g5: #061E30;
+    --bg: #000000; --panel: #080808; --panel2: #0f0f0f; --text: #EFF8FF; --muted: #3a6080; --border: #1a3a5c;
+    --gold: #F4A623;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -49,24 +50,23 @@
   .auth-divider-text { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
   .auth-wm { display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .auth-wm-orn { display: flex; align-items: center; gap: 10px; }
-  .auth-wm-orn-line { width: 48px; height: 0.5px; background: var(--g4); }
-  .auth-wm-orn-gem { width: 5px; height: 5px; background: var(--g2); transform: rotate(45deg); }
+  .auth-wm-orn-line { width: 48px; height: 0.5px; background: var(--gold); }
+  .auth-wm-orn-gem { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); }
   .auth-wm-logotype { display: flex; align-items: baseline; line-height: 1; }
   .auth-wm-kitchen {
-    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 64px;
-    background: linear-gradient(170deg, var(--g1) 0%, var(--g2) 45%, var(--g3) 100%);
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 52px;
+    background: linear-gradient(170deg, #FFFBF0, #F9E07F, #F4A623, #C47D0E, #8A5600);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .auth-wm-separator { width: 1px; height: 48px; background: linear-gradient(180deg, transparent, var(--g4), transparent); margin: 0 16px; align-self: center; }
+  .auth-wm-separator { width: 0.5px; height: 38px; background: #333; margin: 0 14px; align-self: center; }
   .auth-wm-hq {
-    font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 64px;
-    background: linear-gradient(170deg, var(--g0) 0%, var(--g1) 30%, var(--g2) 65%, var(--g3) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.08em;
+    font-family: 'Just Another Hand', cursive; font-size: 28px;
+    color: var(--g1); transform: rotate(-2deg); display: inline-block;
   }
   .auth-wm-bottom { display: flex; align-items: center; gap: 10px; }
-  .auth-wm-btm-line { width: 40px; height: 0.5px; background: var(--g4); }
-  .auth-wm-btm-dot { width: 3px; height: 3px; background: var(--g3); border-radius: 50%; }
-  .auth-wm-btm-text { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.55em; color: var(--g4); text-transform: uppercase; margin-right: -0.55em; }
+  .auth-wm-btm-line { width: 40px; height: 0.5px; background: var(--gold); }
+  .auth-wm-btm-dot { width: 3px; height: 3px; background: var(--gold); border-radius: 50%; }
+  .auth-wm-btm-text { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.55em; color: #666; text-transform: uppercase; margin-right: -0.55em; }
   .auth-tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: var(--g4); letter-spacing: 0.06em; }
   .btn-google {
     display: flex; align-items: center; gap: 0.75rem; background: #040f1e; color: var(--g1);
@@ -86,17 +86,20 @@
     padding: 0.7rem 1.5rem; background: #030c18; border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 100;
   }
-  .topnav-logo { display: flex; align-items: baseline; line-height: 1; }
+  .topnav-logo { display: flex; align-items: center; gap: 6px; line-height: 1; }
+  .topnav-orn { display: flex; align-items: center; gap: 4px; }
+  .topnav-orn-line { width: 18px; height: 0.5px; background: var(--gold); }
+  .topnav-orn-gem { width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+  .topnav-logo-inner { display: flex; align-items: baseline; }
   .topnav-wm-kitchen {
-    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 22px;
-    background: linear-gradient(160deg, var(--g1), var(--g2), var(--g3));
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 20px;
+    background: linear-gradient(170deg, #FFFBF0, #F9E07F, #F4A623, #C47D0E, #8A5600);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .topnav-wm-sep { width: 1px; height: 16px; background: linear-gradient(180deg, transparent, var(--g4), transparent); margin: 0 7px; align-self: center; }
+  .topnav-wm-sep { width: 0.5px; height: 14px; background: #333; margin: 0 6px; align-self: center; }
   .topnav-wm-hq {
-    font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 22px; letter-spacing: 0.08em;
-    background: linear-gradient(160deg, var(--g0), var(--g1), var(--g2), var(--g3));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-family: 'Just Another Hand', cursive; font-size: 22px;
+    color: var(--g1); transform: rotate(-2deg); display: inline-block;
   }
   .topnav-user { display: flex; align-items: center; gap: 0.5rem; }
   .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--g4); }
@@ -104,10 +107,11 @@
   .btn-logout:hover { border-color: var(--g4); color: var(--g2); }
 
   /* ── TABS ── */
-  .tabs { display: flex; gap: 0.4rem; padding: 0.7rem 1.5rem; overflow-x: auto; background: #030c18; border-bottom: 1px solid var(--border); }
-  .tab { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.85rem; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.05em; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .tab.active { background: #151005; border-color: var(--g4); color: var(--g1); box-shadow: 0 0 10px rgba(90,180,240,0.1); }
-  .tab:hover:not(.active) { border-color: var(--g5); color: var(--g3); }
+  .tabs { display: flex; gap: 0; padding: 0 1rem; overflow-x: auto; background: #000; border-bottom: 1px solid var(--border); scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { display: flex; align-items: center; padding: 0.6rem 1rem; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; cursor: pointer; white-space: nowrap; transition: all 0.15s; height: 38px; }
+  .tab.active { color: #fff; border-bottom-color: var(--g2); }
+  .tab:hover:not(.active) { color: var(--g1); }
 
   /* ── CONTENT ── */
   .content { max-width: 760px; margin: 0 auto; padding: 1.5rem; }
@@ -175,24 +179,23 @@
   }
   .home-wm { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .home-wm-orn { display: flex; align-items: center; gap: 10px; }
-  .home-wm-orn-line { width: 40px; height: 0.5px; background: var(--g4); }
-  .home-wm-orn-gem { width: 5px; height: 5px; background: var(--g2); transform: rotate(45deg); }
+  .home-wm-orn-line { width: 40px; height: 0.5px; background: var(--gold); }
+  .home-wm-orn-gem { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); }
   .home-wm-logotype { display: flex; align-items: baseline; line-height: 1; }
   .home-wm-kitchen {
     font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 52px;
-    background: linear-gradient(170deg, var(--g1) 0%, var(--g2) 45%, var(--g3) 100%);
+    background: linear-gradient(170deg, #FFFBF0, #F9E07F, #F4A623, #C47D0E, #8A5600);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
-  .home-wm-separator { width: 1px; height: 38px; background: linear-gradient(180deg, transparent, var(--g4), transparent); margin: 0 14px; align-self: center; }
+  .home-wm-separator { width: 0.5px; height: 38px; background: #333; margin: 0 14px; align-self: center; }
   .home-wm-hq {
-    font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 52px; letter-spacing: 0.08em;
-    background: linear-gradient(170deg, var(--g0) 0%, var(--g1) 30%, var(--g2) 65%, var(--g3) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    font-family: 'Just Another Hand', cursive; font-size: 30px;
+    color: var(--g1); transform: rotate(-2deg); display: inline-block;
   }
   .home-wm-bottom { display: flex; align-items: center; gap: 10px; }
-  .home-wm-btm-line { width: 32px; height: 0.5px; background: var(--g4); }
-  .home-wm-btm-dot { width: 3px; height: 3px; background: var(--g3); border-radius: 50%; }
-  .home-wm-btm-text { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.5em; color: var(--g4); text-transform: uppercase; margin-right: -0.5em; }
+  .home-wm-btm-line { width: 32px; height: 0.5px; background: var(--gold); }
+  .home-wm-btm-dot { width: 3px; height: 3px; background: var(--gold); border-radius: 50%; }
+  .home-wm-btm-text { font-family: 'DM Mono', monospace; font-size: 7px; letter-spacing: 0.5em; color: #666; text-transform: uppercase; margin-right: -0.5em; }
   .home-tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--g4); letter-spacing: 0.06em; }
 
   /* Search rapide home */
@@ -474,9 +477,9 @@
         <div class="auth-wm-orn-line"></div>
       </div>
       <div class="auth-wm-logotype">
-        <span class="auth-wm-kitchen">Kitchen</span>
+        <span class="auth-wm-kitchen">Golden</span>
         <div class="auth-wm-separator"></div>
-        <span class="auth-wm-hq">HQ</span>
+        <span class="auth-wm-hq">KitchenHQ</span>
       </div>
       <div class="auth-wm-bottom">
         <div class="auth-wm-btm-line"></div>
@@ -506,9 +509,15 @@
 <div id="app">
   <nav class="topnav">
     <div class="topnav-logo">
-      <span class="topnav-wm-kitchen">Kitchen</span>
-      <div class="topnav-wm-sep"></div>
-      <span class="topnav-wm-hq">HQ</span>
+      <div class="topnav-orn">
+        <div class="topnav-orn-line"></div>
+        <div class="topnav-orn-gem"></div>
+      </div>
+      <div class="topnav-logo-inner">
+        <span class="topnav-wm-kitchen">Golden</span>
+        <div class="topnav-wm-sep"></div>
+        <span class="topnav-wm-hq">KitchenHQ</span>
+      </div>
     </div>
     <div class="topnav-user">
       <img class="user-avatar" id="user-avatar" src="" alt="">
@@ -517,11 +526,11 @@
   </nav>
 
   <div class="tabs">
-    <button class="tab" data-tab="home">🏠 Accueil</button>
-    <button class="tab" data-tab="recettes">👨‍🍳 Recettes</button>
-    <button class="tab" data-tab="repas">🍽️ Repas</button>
-    <button class="tab" data-tab="aliments">🥘 Aliments</button>
-    <button class="tab" data-tab="epicerie">🛒 Épicerie</button>
+    <button class="tab" data-tab="home">Accueil</button>
+    <button class="tab" data-tab="recettes">Recettes</button>
+    <button class="tab" data-tab="repas">Repas</button>
+    <button class="tab" data-tab="aliments">Aliments</button>
+    <button class="tab" data-tab="epicerie">Epicerie</button>
   </div>
 
   <div class="content">
@@ -536,9 +545,9 @@
             <div class="home-wm-orn-line"></div>
           </div>
           <div class="home-wm-logotype">
-            <span class="home-wm-kitchen">Kitchen</span>
+            <span class="home-wm-kitchen">Golden</span>
             <div class="home-wm-separator"></div>
-            <span class="home-wm-hq">HQ</span>
+            <span class="home-wm-hq">KitchenHQ</span>
           </div>
           <div class="home-wm-bottom">
             <div class="home-wm-btm-line"></div>
