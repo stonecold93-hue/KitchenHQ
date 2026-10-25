@@ -98,8 +98,9 @@
   }
   .topnav-wm-sep { width: 0.5px; height: 14px; background: #333; margin: 0 6px; align-self: center; }
   .topnav-wm-hq {
-    font-family: 'Just Another Hand', cursive; font-size: 22px;
-    color: var(--g1); transform: rotate(-2deg); display: inline-block;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--g1); display: inline-block;
+    letter-spacing: 0.08em; font-weight: 400;
   }
   .topnav-user { display: flex; align-items: center; gap: 0.5rem; }
   .user-avatar { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--g4); }
@@ -537,33 +538,11 @@
 
     <!-- HOME -->
     <div class="section active" id="tab-home">
-      <div class="home-hero">
-        <div class="home-wm">
-          <div class="home-wm-orn">
-            <div class="home-wm-orn-line"></div>
-            <div class="home-wm-orn-gem"></div>
-            <div class="home-wm-orn-line"></div>
-          </div>
-          <div class="home-wm-logotype">
-            <span class="home-wm-kitchen">Golden</span>
-            <div class="home-wm-separator"></div>
-            <span class="home-wm-hq">KitchenHQ</span>
-          </div>
-          <div class="home-wm-bottom">
-            <div class="home-wm-btm-line"></div>
-            <div class="home-wm-btm-dot"></div>
-            <span class="home-wm-btm-text">Headquarters</span>
-            <div class="home-wm-btm-dot"></div>
-            <div class="home-wm-btm-line"></div>
-          </div>
-        </div>
-        <div class="home-tagline">Tout ce qu'il faut pour bien cuisiner.</div>
-      </div>
 
       <!-- RECHERCHE RAPIDE -->
       <div class="home-search-wrap">
         <div class="search-bar" style="margin-bottom:0">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon">&#9906;</span>
           <input type="search" id="home-search-input" placeholder="Rechercher un aliment..." oninput="homeSearch(this.value)" onfocus="if(this.value==='Nhg'||this.value==='nhg')this.value=''" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
           <button class="search-clear" onclick="clearHomeSearch()">✕</button>
         </div>
@@ -573,22 +552,18 @@
       <!-- 3 CARTES NAVIGATION -->
       <div class="home-cards">
         <div class="home-card" onclick="goTab('aliments')">
-          <div class="home-card-icon">🥘</div>
           <div class="home-card-title">Aliments</div>
           <div class="home-card-sub">Gérer votre inventaire</div>
         </div>
         <div class="home-card" onclick="goTab('recettes')">
-          <div class="home-card-icon">👨‍🍳</div>
           <div class="home-card-title">Recettes</div>
-          <div class="home-card-sub">Vos recettes & stock</div>
+          <div class="home-card-sub">Vos recettes &amp; stock</div>
         </div>
         <div class="home-card" onclick="goTab('epicerie')">
-          <div class="home-card-icon">🛒</div>
           <div class="home-card-title">Epicerie</div>
           <div class="home-card-sub">Votre liste de courses</div>
         </div>
         <div class="home-card" onclick="goTab('repas')">
-          <div class="home-card-icon">🍽️</div>
           <div class="home-card-title">Repas</div>
           <div class="home-card-sub">Planifier la semaine</div>
         </div>
@@ -597,22 +572,22 @@
       <!-- SUGGESTIONS -->
       <div class="suggestions-wrap">
         <button class="btn-suggestion" onclick="genererSuggestions()">
-          🍽️ Qu'est-ce que je cuisine ce soir ?
+          Qu'est-ce que je cuisine ce soir ?
         </button>
         <div id="suggestions-results"></div>
       </div>
 
       <!-- SCAN PHOTO -->
       <div class="home-scan">
-        <div class="home-scan-title">📸 Scanner des aliments</div>
+        <div class="home-scan-title">Scanner des aliments</div>
         <div class="home-scan-sub">Prenez une photo de vos achats ou d'un reçu — l'IA les ajoute à votre inventaire</div>
         <div class="home-scan-actions">
           <label class="btn-gold home-scan-btn" for="scan-gallery-input">
-            🖼️ Depuis la galerie
+            Depuis la galerie
             <input type="file" id="scan-gallery-input" accept="image/*" style="display:none" onchange="scanPhoto(this)"/>
           </label>
           <label class="btn-gold home-scan-btn" for="scan-file-input">
-            📷 Prendre une photo
+            Prendre une photo
             <input type="file" id="scan-file-input" accept="image/*" capture="environment" style="display:none" onchange="scanPhoto(this)"/>
           </label>
         </div>
@@ -642,7 +617,6 @@
     <!-- ALIMENTS -->
     <div class="section" id="tab-aliments">
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
         <input type="search" id="search-input" placeholder="Rechercher un aliment..." oninput="appliquerFiltres()" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
         <button class="search-clear" onclick="clearSearch()" title="Effacer">✕</button>
       </div>
@@ -658,15 +632,15 @@
 
       <!-- SCAN RECETTE -->
       <div class="scan-recette-wrap">
-        <div class="scan-recette-title">📥 Ajouter une recette rapidement</div>
+        <div class="scan-recette-title">Ajouter une recette rapidement</div>
         <div class="scan-recette-sub">Collez le texte d'une recette web ou prenez une photo d'une recette papier — Claude remplit tout automatiquement !</div>
         <div class="home-scan-actions" style="margin-bottom:0.75rem">
           <label class="btn-gold home-scan-btn" for="scan-recette-gallery">
-            🖼️ Photo recette
+            Photo recette
             <input type="file" id="scan-recette-gallery" accept="image/*" style="display:none" onchange="scanPhotoRecette(this)"/>
           </label>
           <label class="btn-gold home-scan-btn" for="scan-recette-camera">
-            📷 Prendre photo
+            Prendre photo
             <input type="file" id="scan-recette-camera" accept="image/*" capture="environment" style="display:none" onchange="scanPhotoRecette(this)"/>
           </label>
         </div>
@@ -1663,7 +1637,7 @@ function voirRecette(id) {
           ${stockItem ? ` · En stock: ${stockItem.qty} ${stockItem.unit || ''}` : ' · Pas en stock'}
         </div>
       </div>
-      ${manque ? `<button class="stock-cart" onclick="addToEpiceriePublic('${ing.nom}')">🛒 Épicerie</button>` : ''}
+      ${manque ? `<button class="stock-cart" onclick="addToEpiceriePublic('${ing.nom}')">Epicerie</button>` : ''}
     `;
     check.appendChild(div);
   });
@@ -1803,7 +1777,7 @@ window.homeSearch = (query) => {
         <div class="home-search-item-name">${item.name}</div>
         <div class="home-search-item-qty">${item.qty} ${item.unit}</div>
       </div>
-      <button class="home-search-item-cart" onclick="addToEpicerie('${item.name}')">🛒 Épicerie</button>
+      <button class="home-search-item-cart" onclick="addToEpicerie('${item.name}')">Epicerie</button>
     `;
     results.appendChild(div);
   });
@@ -1818,7 +1792,7 @@ window.toggleApiKeyVisible = () => {
 // ── SUGGESTIONS DE REPAS ──
 window.genererSuggestions = () => {
   const resultsDiv = document.getElementById('suggestions-results');
-  resultsDiv.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem 0">🔍 Analyse de votre stock...</div>';
+  resultsDiv.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem 0">Analyse de votre stock...</div>';
 
   if (!recettesData || Object.keys(recettesData).length === 0) {
     resultsDiv.innerHTML = "<div style='color:var(--muted);font-size:0.8rem'>Aucune recette trouvée — ajoutez des recettes d'abord !</div>";
@@ -1880,7 +1854,7 @@ window.genererSuggestions = () => {
     } else {
       statusHtml = '<div class="suggestion-card-status">' + disponibles + '/' + total + ' ingrédients en stock (' + pct + '%)</div>';
       if (manquants.length > 0 && manquants.length <= 4) {
-        const manqueItems = manquants.map(m => "🛒 " + m).join(" · ");
+        const manqueItems = manquants.map(m => m).join(" · ");
         statusHtml += '<div class="suggestion-card-manque" data-manquants="' + manquants.join("|") + '">Manque : ' + manqueItems + '</div>';
       } else if (manquants.length > 4) {
         statusHtml += '<div class="suggestion-card-manque">Manque ' + manquants.length + ' ingrédients</div>';
@@ -1896,7 +1870,7 @@ window.genererSuggestions = () => {
       if (manqDiv) {
         const manquants = manqDiv.dataset.manquants.split('|');
         manquants.forEach(m => addToEpiceriePublic(m));
-        showToast("🛒 Ingrédients manquants ajoutés à l'épicerie !");
+        showToast("Ingredients manquants ajoutes a l'epicerie !");
         return;
       }
       voirRecette(id);
@@ -2092,7 +2066,7 @@ window.scanPhoto = async (input) => {
   if (!file) return;
   const status = document.getElementById('scan-status');
   const resultsDiv = document.getElementById('scan-results');
-  status.textContent = '🔍 Analyse de la photo en cours...';
+  status.textContent = 'Analyse de la photo en cours...';
   status.classList.remove('hidden');
   resultsDiv.classList.add('hidden');
   resultsDiv.innerHTML = '';
